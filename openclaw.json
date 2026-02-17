@@ -44,9 +44,10 @@
       enabled: true,
       // dmPolicy controls who can DM the bot:
       //   "pairing"   — unknown users get a one-time code; approve with: openclaw pairing approve telegram <code>
+      //                 NOT usable on Railway (no CLI access to approve codes)
       //   "allowlist" — only users in allowFrom can DM
-      //   "open"      — everyone (add "*" to allowFrom)
-      dmPolicy: "pairing",
+      //   "open"      — everyone can DM
+      dmPolicy: "open",
       // Live streaming preview while the model responds
       streamMode: "partial",
       // Group chats: require @bot mention before responding
