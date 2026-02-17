@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# Claude Code dev files (not needed in image)
+.claude/
+
+# Documentation (not needed in image)
+docs/
+README.md
+CLAUDE.md
+
+# Local dev state (never in image)
+.env
+*.keys.json
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
