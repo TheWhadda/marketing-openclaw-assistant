@@ -1,7 +1,7 @@
 FROM node:22-bookworm-slim
 
 # git is required by some openclaw transitive dependencies during install
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # pnpm is built into Node 22 via corepack — no extra install needed.
