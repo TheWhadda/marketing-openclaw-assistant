@@ -29,6 +29,13 @@
     },
   },
 
+  // Gateway mode: "local" tells the gateway to start in local/self-hosted mode.
+  // "bind: lan" makes it listen on all interfaces (required for Railway).
+  gateway: {
+    mode: "local",
+    bind: "lan",
+  },
+
   // Telegram channel
   // Bot token is read from TELEGRAM_BOT_TOKEN env var automatically.
   // Create a bot at https://t.me/BotFather and add the token to Railway variables.

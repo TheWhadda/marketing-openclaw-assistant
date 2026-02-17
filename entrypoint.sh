@@ -34,4 +34,4 @@ else
 fi
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
-exec openclaw gateway --port "$PORT" --host 0.0.0.0
+exec openclaw gateway run --port "$PORT" --bind lan --allow-unconfigured
