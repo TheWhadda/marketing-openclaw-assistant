@@ -3,8 +3,7 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# OpenClaw gateway health endpoint
-healthcheckPath = "/health"
-healthcheckTimeout = 30
-# Allow time for npm install and first-boot workspace seeding
-startCommand = "/app/entrypoint.sh"
+# OpenClaw gateway doesn't expose an HTTP /health endpoint.
+# Railway will use a TCP healthcheck on the exposed port instead.
+# healthcheckTimeout still controls how long Railway waits for the port to open.
+healthcheckTimeout = 60
