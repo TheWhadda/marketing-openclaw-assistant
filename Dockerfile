@@ -1,11 +1,15 @@
 FROM node:22-bookworm-slim
 
+# pnpm is built into Node 22 via corepack — no extra install needed.
+# It uses a content-addressable store with hard links so memory usage
+# during install is much lower than npm's flat copy approach.
+RUN corepack enable pnpm
+
 WORKDIR /app
 
-# Install dependencies separately for better layer caching.
-# Railway rebuilds from this layer only when package.json changes.
+# Install dependencies first (Railway caches this layer until package.json changes)
 COPY package.json ./
-RUN npm install --omit=dev
+RUN pnpm install --prod --no-lockfile
 
 # Add local bin to PATH so entrypoint.sh can call `openclaw` directly
 ENV PATH="/app/node_modules/.bin:$PATH"
