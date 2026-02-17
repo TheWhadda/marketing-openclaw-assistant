@@ -8,6 +8,10 @@ workspace/memory-private/
 # Workspace skills installed via clawhub (commit only custom ones)
 workspace/skills/.clawhub/
 
+# Node
+node_modules/
+package-lock.json
+
 # Secrets
 .env
 *.keys.json
