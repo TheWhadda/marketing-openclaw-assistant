@@ -33,5 +33,13 @@ else
   echo "[entrypoint] openclaw.json already exists, skipping seed."
 fi
 
+# OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
+# Set it in Railway dashboard: Variables → OPENCLAW_GATEWAY_TOKEN → any strong secret.
+if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
+  echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
+  echo "[entrypoint] Add it in Railway: Variables → OPENCLAW_GATEWAY_TOKEN → <any secret>"
+  exit 1
+fi
+
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
-exec openclaw gateway run --port "$PORT" --bind lan --allow-unconfigured
+exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured
