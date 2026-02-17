@@ -1,0 +1,23 @@
+# OpenClaw runtime state (do not commit)
+workspace/sessions/
+workspace/store/
+workspace/logs/
+workspace/cache/
+workspace/memory-private/
+
+# Workspace skills installed via clawhub (commit only custom ones)
+workspace/skills/.clawhub/
+
+# Secrets
+.env
+*.keys.json
+secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp

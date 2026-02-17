@@ -1,0 +1,33 @@
+// OpenClaw configuration for Marketing Assistant
+// Copy to ~/.openclaw/openclaw.json (or symlink)
+// Then update the workspace path to match your actual checkout location.
+//
+// Full config reference: https://docs.openclaw.ai/gateway/configuration-reference
+{
+  agents: {
+    defaults: {
+      // ⚠️ Update this path to where you cloned this repo
+      workspace: "~/Work/SYNCRA/marketing-openclaw-assistant/workspace",
+
+      model: {
+        // Recommended: claude-opus-4-6 for complex multi-agent orchestration
+        primary: "anthropic/claude-opus-4-6",
+        fallbacks: ["anthropic/claude-sonnet-4-5"],
+      },
+
+      models: {
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
+        "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
+      },
+    },
+  },
+
+  // Session: keep conversations persistent within a day
+  session: {
+    reset: {
+      mode: "daily",
+      atHour: 4,
+      idleMinutes: 240,
+    },
+  },
+}
