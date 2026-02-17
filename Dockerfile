@@ -23,6 +23,11 @@ ENV PATH="/app/node_modules/.bin:$PATH"
 ENV OPENCLAW_STATE_DIR=/data/.openclaw
 ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
 
+# Cap Node.js heap at 384 MB so V8 GC kicks in before hitting the
+# Railway container memory limit (512 MB hobby / 8 GB pro).
+# Increase this value if you're on a higher-memory Railway plan.
+ENV NODE_OPTIONS="--max-old-space-size=384"
+
 # Copy workspace seed (agent context — written to /data/workspace on first boot)
 COPY workspace/ ./workspace-seed/
 
