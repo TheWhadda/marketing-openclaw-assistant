@@ -18,6 +18,11 @@ RUN pnpm install --prod --no-lockfile
 # Add local bin to PATH so entrypoint.sh can call `openclaw` directly
 ENV PATH="/app/node_modules/.bin:$PATH"
 
+# Default state/workspace dirs — Railway picks these up automatically.
+# Override in Railway dashboard only if you need custom paths.
+ENV OPENCLAW_STATE_DIR=/data/.openclaw
+ENV OPENCLAW_WORKSPACE_DIR=/data/workspace
+
 # Copy workspace seed (agent context — written to /data/workspace on first boot)
 COPY workspace/ ./workspace-seed/
 
