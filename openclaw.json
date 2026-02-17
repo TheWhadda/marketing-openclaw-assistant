@@ -1,16 +1,23 @@
-// OpenClaw configuration for Marketing Assistant
-// Copy to ~/.openclaw/openclaw.json (or symlink)
-// Then update the workspace path to match your actual checkout location.
+// OpenClaw configuration — Marketing Assistant
+//
+// LOCAL DEV:
+//   Copy to ~/.openclaw/openclaw.json and update the workspace path below.
+//
+// RAILWAY (production):
+//   This file is seeded to /data/.openclaw/openclaw.json on first boot.
+//   After that, use the Control UI (/openclaw) or /setup wizard to make changes.
+//   TELEGRAM_BOT_TOKEN and ANTHROPIC_API_KEY are read from Railway env vars automatically.
 //
 // Full config reference: https://docs.openclaw.ai/gateway/configuration-reference
 {
   agents: {
     defaults: {
-      // ⚠️ Update this path to where you cloned this repo
+      // LOCAL DEV: update this path to where you cloned this repo.
+      // RAILWAY: overridden by OPENCLAW_WORKSPACE_DIR env var — no change needed here.
       workspace: "~/Work/SYNCRA/marketing-openclaw-assistant/workspace",
 
       model: {
-        // Recommended: claude-opus-4-6 for complex multi-agent orchestration
+        // claude-opus-4-6 recommended for complex multi-agent orchestration
         primary: "anthropic/claude-opus-4-6",
         fallbacks: ["anthropic/claude-sonnet-4-5"],
       },
@@ -22,7 +29,27 @@
     },
   },
 
-  // Session: keep conversations persistent within a day
+  // Telegram channel
+  // Bot token is read from TELEGRAM_BOT_TOKEN env var automatically.
+  // Create a bot at https://t.me/BotFather and add the token to Railway variables.
+  channels: {
+    telegram: {
+      enabled: true,
+      // dmPolicy controls who can DM the bot:
+      //   "pairing"   — unknown users get a one-time code; approve with: openclaw pairing approve telegram <code>
+      //   "allowlist" — only users in allowFrom can DM
+      //   "open"      — everyone (add "*" to allowFrom)
+      dmPolicy: "pairing",
+      // Live streaming preview while the model responds
+      streamMode: "partial",
+      // Group chats: require @bot mention before responding
+      groups: {
+        "*": { requireMention: true },
+      },
+    },
+  },
+
+  // Session: keep conversation context within a day, reset at 4am
   session: {
     reset: {
       mode: "daily",

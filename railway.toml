@@ -1,0 +1,10 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# OpenClaw gateway health endpoint
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+# Allow time for npm install and first-boot workspace seeding
+startCommand = "/app/entrypoint.sh"
