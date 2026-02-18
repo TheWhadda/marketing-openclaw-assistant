@@ -15,8 +15,6 @@ services:
         sync: false
       - key: OPENCLAW_GATEWAY_TOKEN
         sync: false
-      - key: YANDEX_DIRECT_TOKEN
-        sync: false
       # Give Node.js 1 GB heap — safe for Standard (2 GB) plan.
       # Increase if you upgrade to a higher-memory plan.
       - key: NODE_OPTIONS
