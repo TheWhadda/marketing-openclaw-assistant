@@ -46,6 +46,5 @@ EXPOSE 8080
 #   OPENCLAW_GATEWAY_TOKEN  — admin secret for Control UI
 #   TELEGRAM_BOT_TOKEN      — from @BotFather
 #   ANTHROPIC_API_KEY       — from console.anthropic.com
-#   YANDEX_DIRECT_TOKEN     — OAuth token for Yandex Direct API (yandex-direct skill)
 
 ENTRYPOINT ["/app/entrypoint.sh"]
