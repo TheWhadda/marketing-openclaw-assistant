@@ -14,13 +14,21 @@ echo "[entrypoint] Port:          $PORT"
 mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
 
 # Seed workspace with agent context (CLAUDE.md) on first boot only.
-# On subsequent deploys the persisted workspace takes precedence.
+# User memories and session data in the workspace are preserved across deploys.
 if [ ! -f "$WORKSPACE_DIR/CLAUDE.md" ]; then
   echo "[entrypoint] First boot — seeding workspace from image..."
   cp -r /app/workspace-seed/. "$WORKSPACE_DIR/"
   echo "[entrypoint] Workspace seeded."
 else
-  echo "[entrypoint] Workspace already initialized, skipping seed."
+  echo "[entrypoint] Workspace already initialized, skipping full seed."
+fi
+
+# Always sync skills from the image so newly added skills are available
+# without requiring a full first-boot reset.
+if [ -d "/app/workspace-seed/skills" ]; then
+  mkdir -p "$WORKSPACE_DIR/skills"
+  cp -r /app/workspace-seed/skills/. "$WORKSPACE_DIR/skills/"
+  echo "[entrypoint] Skills synced."
 fi
 
 # OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
