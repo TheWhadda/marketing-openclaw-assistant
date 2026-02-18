@@ -47,6 +47,7 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
+openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set channels.telegram.enabled true
 openclaw config set channels.telegram.dmPolicy open
 openclaw config set channels.telegram.allowFrom '["*"]'
