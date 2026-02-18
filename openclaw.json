@@ -48,6 +48,7 @@
       //   "allowlist" — only users in allowFrom can DM
       //   "open"      — everyone can DM
       dmPolicy: "open",
+      allowFrom: ["*"],
       // Live streaming preview while the model responds
       streamMode: "partial",
       // Group chats: require @bot mention before responding
