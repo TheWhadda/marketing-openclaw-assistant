@@ -52,6 +52,8 @@ openclaw config set channels.telegram.streamMode partial
 openclaw config set session.reset.mode daily
 openclaw config set session.reset.atHour 4
 openclaw config set session.reset.idleMinutes 240
+# Disable browser relay tool — this deployment is headless (no Chrome extension possible).
+openclaw config set tools.browser.enabled false || true
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
