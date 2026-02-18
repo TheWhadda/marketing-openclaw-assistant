@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: marketing-openclaw-assistant
+    env: docker
+    dockerfilePath: ./Dockerfile
+    # Standard plan = 2 GB RAM — required for openclaw (heap alone needs ~400 MB+).
+    # Starter (512 MB) will OOM. Standard ($25/mo) or Pro ($85/mo) recommended.
+    plan: standard
+    envVars:
+      # Set these in the Render dashboard (Dashboard → Environment → Add env var).
+      # Do NOT put real values here — this file is committed to git.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENCLAW_GATEWAY_TOKEN
+        sync: false
+      # Give Node.js 1 GB heap — safe for Standard (2 GB) plan.
+      # Increase if you upgrade to a higher-memory plan.
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=1024"
+    # Persistent disk so sessions, memory and config survive redeploys.
+    disk:
+      name: openclaw-data
+      mountPath: /data
+      sizeGB: 1
