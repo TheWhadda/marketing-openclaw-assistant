@@ -13,18 +13,20 @@ echo "[entrypoint] Port:          $PORT"
 # Create persistent directories if they don't exist
 mkdir -p "$STATE_DIR" "$WORKSPACE_DIR"
 
-# Seed workspace with agent context (CLAUDE.md) on first boot only.
-# User memories and session data in the workspace are preserved across deploys.
+# First boot: seed the full workspace (memories, session data, etc.)
 if [ ! -f "$WORKSPACE_DIR/CLAUDE.md" ]; then
   echo "[entrypoint] First boot — seeding workspace from image..."
   cp -r /app/workspace-seed/. "$WORKSPACE_DIR/"
   echo "[entrypoint] Workspace seeded."
-else
-  echo "[entrypoint] Workspace already initialized, skipping full seed."
 fi
 
-# Always sync skills from the image so newly added skills are available
-# without requiring a full first-boot reset.
+# Always sync agent config files from the image on every deploy.
+# CLAUDE.md and skills are code, not user data — they must reflect the image.
+# User-generated content (memories, sessions) is preserved because it lives
+# in subdirectories not listed here.
+cp /app/workspace-seed/CLAUDE.md "$WORKSPACE_DIR/CLAUDE.md"
+echo "[entrypoint] CLAUDE.md synced."
+
 if [ -d "/app/workspace-seed/skills" ]; then
   mkdir -p "$WORKSPACE_DIR/skills"
   cp -r /app/workspace-seed/skills/. "$WORKSPACE_DIR/skills/"
