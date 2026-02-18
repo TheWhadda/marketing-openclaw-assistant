@@ -23,23 +23,28 @@ else
   echo "[entrypoint] Workspace already initialized, skipping seed."
 fi
 
-# Seed openclaw.json config on first boot only.
-# Includes Telegram channel config + model settings.
-if [ ! -f "$STATE_DIR/openclaw.json" ]; then
-  echo "[entrypoint] First boot — seeding openclaw.json..."
-  cp /app/openclaw.json "$STATE_DIR/openclaw.json"
-  echo "[entrypoint] openclaw.json seeded."
-else
-  echo "[entrypoint] openclaw.json already exists, skipping seed."
-fi
-
 # OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
-# Set it in Railway dashboard: Variables → OPENCLAW_GATEWAY_TOKEN → any strong secret.
+# Set it in the platform dashboard (Railway/Render): OPENCLAW_GATEWAY_TOKEN → any strong secret.
 if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
   echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
-  echo "[entrypoint] Add it in Railway: Variables → OPENCLAW_GATEWAY_TOKEN → <any secret>"
+  echo "[entrypoint] Add it in your platform dashboard: OPENCLAW_GATEWAY_TOKEN=<any secret>"
   exit 1
 fi
+
+# Apply config using `openclaw config set` (idempotent, writes proper metadata).
+# This runs on every boot to ensure settings survive platform-triggered config rewrites.
+# Seeding a raw openclaw.json is avoided — openclaw overwrites files lacking internal metadata.
+echo "[entrypoint] Applying openclaw config..."
+openclaw config set gateway.mode local
+openclaw config set gateway.bind lan
+openclaw config set channels.telegram.enabled true
+openclaw config set channels.telegram.dmPolicy open
+openclaw config set channels.telegram.allowFrom '["*"]'
+openclaw config set channels.telegram.streamMode partial
+openclaw config set session.reset.mode daily
+openclaw config set session.reset.atHour 4
+openclaw config set session.reset.idleMinutes 240
+echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
 exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured

@@ -31,9 +31,6 @@ ENV NODE_OPTIONS="--max-old-space-size=384"
 # Copy workspace seed (agent context — written to /data/workspace on first boot)
 COPY workspace/ ./workspace-seed/
 
-# Copy openclaw.json seed (config — written to /data/.openclaw on first boot)
-COPY openclaw.json ./openclaw.json
-
 # Copy and make startup script executable
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
