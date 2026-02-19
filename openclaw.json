@@ -17,14 +17,15 @@
       workspace: "~/Work/SYNCRA/marketing-openclaw-assistant/workspace",
 
       model: {
-        // claude-opus-4-6 recommended for complex multi-agent orchestration
-        primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["anthropic/claude-sonnet-4-5"],
+        // Override via OPENCLAW_MODEL env var (e.g. anthropic/claude-opus-4-6 for complex tasks)
+        primary: "anthropic/claude-sonnet-4-6",
+        fallbacks: ["anthropic/claude-haiku-4-5-20251001"],
       },
 
       models: {
+        "anthropic/claude-sonnet-4-6": { alias: "Sonnet" },
         "anthropic/claude-opus-4-6": { alias: "Opus" },
-        "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
+        "anthropic/claude-haiku-4-5-20251001": { alias: "Haiku" },
       },
     },
   },

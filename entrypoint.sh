@@ -48,6 +48,7 @@ echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
+openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-6}"
 openclaw config set channels.telegram.enabled true
 openclaw config set channels.telegram.streamMode partial
 # Access control: TELEGRAM_ALLOWLIST=@user1,@user2,123456789 → allowlist mode.
