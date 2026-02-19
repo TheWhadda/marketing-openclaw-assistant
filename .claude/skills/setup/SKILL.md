@@ -46,7 +46,7 @@ Default is **Sonnet 4.6** (best price/quality balance). Override if needed:
 
 ```bash
 # Default — recommended
-openclaw config set agents.defaults.model.primary "anthropic/claude-sonnet-4-6"
+openclaw config set agents.defaults.model.primary "anthropic/claude-sonnet-4-5"
 
 # Higher quality, ~5x more expensive
 # openclaw config set agents.defaults.model.primary "anthropic/claude-opus-4-6"
