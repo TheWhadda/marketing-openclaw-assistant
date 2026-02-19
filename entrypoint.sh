@@ -49,9 +49,18 @@ openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set channels.telegram.enabled true
-openclaw config set channels.telegram.dmPolicy open
-openclaw config set channels.telegram.allowFrom '["*"]'
 openclaw config set channels.telegram.streamMode partial
+# Access control: TELEGRAM_ALLOWLIST=@user1,@user2,123456789 → allowlist mode.
+# Leave unset to allow anyone to DM the bot (open mode).
+if [ -n "$TELEGRAM_ALLOWLIST" ]; then
+  ALLOW_JSON=$(printf '%s' "$TELEGRAM_ALLOWLIST" | sed 's/,/","/g; s/^/["/; s/$/"]/')
+  echo "[entrypoint] Telegram allowlist: $ALLOW_JSON"
+  openclaw config set channels.telegram.dmPolicy allowlist
+  openclaw config set channels.telegram.allowFrom "$ALLOW_JSON"
+else
+  openclaw config set channels.telegram.dmPolicy open
+  openclaw config set channels.telegram.allowFrom '["*"]'
+fi
 openclaw config set session.reset.mode daily
 openclaw config set session.reset.atHour 4
 openclaw config set session.reset.idleMinutes 240
