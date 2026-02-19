@@ -15,6 +15,10 @@ services:
         sync: false
       - key: OPENCLAW_GATEWAY_TOKEN
         sync: false
+      # Comma-separated Telegram @usernames or numeric IDs allowed to DM the bot.
+      # Leave unset to allow everyone. Example: @ivan,@maria,123456789
+      - key: TELEGRAM_ALLOWLIST
+        sync: false
       # Give Node.js 1 GB heap — safe for Standard (2 GB) plan.
       # Increase if you upgrade to a higher-memory plan.
       - key: NODE_OPTIONS

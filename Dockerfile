@@ -45,6 +45,7 @@ EXPOSE 8080
 #   OPENCLAW_WORKSPACE_DIR  — /data/workspace
 #   OPENCLAW_GATEWAY_TOKEN  — admin secret for Control UI
 #   TELEGRAM_BOT_TOKEN      — from @BotFather
+#   TELEGRAM_ALLOWLIST      — comma-separated @usernames or IDs (unset = open to everyone)
 #   ANTHROPIC_API_KEY       — from console.anthropic.com
 
 ENTRYPOINT ["/app/entrypoint.sh"]
