@@ -202,16 +202,18 @@ PRODUCTION (parallel where possible):
 
 ## Implementation Status
 
-| Phase | Status |
-|-------|--------|
-| DISCOVERY | Planned |
-| PLANNING | Planned |
-| PRODUCTION | Planned |
-| EXECUTION | Planned |
-| MONITORING | Planned |
-| LEARNING | Planned |
+| Phase | Status | Notes |
+|-------|--------|-------|
+| DISCOVERY | **In Progress (Skills MVP)** | Аналитик, Дипресерчер, Гипотезатор implemented as workspace skills |
+| PLANNING | Planned | |
+| PRODUCTION | Planned | |
+| EXECUTION | Planned | |
+| MONITORING | Planned | |
+| LEARNING | Planned | |
 
-**Current:** Foundation / project structure only. Single general-purpose agent handles all requests until specialized agents are built.
+**Current:** DISCOVERY phase active. Three agents implemented as OpenClaw workspace skills
+(`workspace/skills/analyst/`, `workspace/skills/deep-researcher/`, `workspace/skills/hypothesizer/`).
+Campaign artifacts stored in `workspace/artifacts/{campaign_id}/`.
 
 ## Technology Stack
 
