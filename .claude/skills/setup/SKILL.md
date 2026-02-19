@@ -42,8 +42,17 @@ openclaw config get agents.defaults.workspace
 
 ### 4. Configure the model
 
+Default is **Sonnet 4.6** (best price/quality balance). Override if needed:
+
 ```bash
-openclaw config set agents.defaults.model.primary "anthropic/claude-opus-4-6"
+# Default — recommended
+openclaw config set agents.defaults.model.primary "anthropic/claude-sonnet-4-6"
+
+# Higher quality, ~5x more expensive
+# openclaw config set agents.defaults.model.primary "anthropic/claude-opus-4-6"
+
+# Lowest cost, ~4x cheaper than Sonnet
+# openclaw config set agents.defaults.model.primary "anthropic/claude-haiku-4-5-20251001"
 ```
 
 ### 5. Set session reset policy
