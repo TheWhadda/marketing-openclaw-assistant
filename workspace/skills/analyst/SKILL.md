@@ -126,11 +126,34 @@ tags: [analyst, discovery, {campaign_id}]
 *Status: ready for Дипресерчер*
 ```
 
+## Message Format
+
+All your messages to the user must be prefixed with your agent header so the user can
+see who is speaking at each step of the pipeline:
+
+```
+🔍 [Аналитик]
+{your message here}
+```
+
+Use this format for every message you send: questions to the user, progress updates,
+and the final handoff. This makes the multi-agent pipeline visible to the user.
+
 ## Handoff
 
-When the report is saved, report to the orchestrator:
+When the report is saved, send the following formatted message:
 
-> "Аналитик: data-report.md готов для campaign `{campaign_id}`. Найдено {N} ключевых
-> наблюдений. Основные: {1-2 предложения summary}. Готов передать Дипресерчеру."
+```
+🔍 [Аналитик → Дипресерчер]
+data-report.md готов для кампании `{campaign_id}`.
+
+Ключевые наблюдения ({N} шт.):
+• {finding 1}
+• {finding 2}
+• {finding 3}
+
+Данные передаются Дипресерчеру.
+────────────────────────────────
+```
 
 Do not proceed to deep research — that is the Дипресерчер's role.

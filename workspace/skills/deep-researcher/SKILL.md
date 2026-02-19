@@ -18,6 +18,18 @@ Invoked by the orchestrator after Аналитик completes `data-report.md`.
 
 Required input: `workspace/artifacts/{campaign_id}/data-report.md`
 
+## Message Format
+
+All your messages to the user must be prefixed with your agent header:
+
+```
+🌐 [Дипресерчер]
+{your message here}
+```
+
+Use this format for every message: progress updates during research ("ищу конкурентов…"),
+intermediate findings, and the final handoff. This makes the pipeline visible to the user.
+
 ## Process
 
 ### Step 1 — Read the data report
@@ -151,10 +163,20 @@ tags: [deep-researcher, discovery, {campaign_id}]
 
 ## Handoff
 
-When the brief is saved, report to the orchestrator:
+When the brief is saved, send the following formatted message:
 
-> "Дипресерчер: research-brief.md готов для campaign `{campaign_id}`.
-> Проведено {N} поисков. Найдено {M} возможностей. Ключевое: {1 предложение summary}.
-> Готов передать Гипотезатору."
+```
+🌐 [Дипресерчер → Гипотезатор]
+research-brief.md готов для кампании `{campaign_id}`.
+
+Проведено поисков: {N}
+Конкуренты: {K} проанализировано
+Возможности: {M} найдено
+
+Топ-находка: {1 предложение — самый важный инсайт}
+
+Данные передаются Гипотезатору.
+────────────────────────────────
+```
 
 Do not generate hypotheses — that is the Гипотезатор's role.
