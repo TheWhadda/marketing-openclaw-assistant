@@ -19,11 +19,17 @@ The orchestrator invokes you at the start of a new DISCOVERY cycle. You operate 
 
 ### Step 1 — Establish context
 
-Ask the user for:
-- **Campaign ID** (or create one: `{product}-{YYYY-MM}`, e.g. `sneakers-2026-02`)
-- **Product / service** being advertised
-- **Current goal** (leads, sales, brand awareness, etc.)
-- **Date range** for historical data (or "no history" if a new campaign)
+**Do NOT ask questions if the user already provided the answer.**
+Extract everything possible from the user's request before asking anything.
+
+- **Campaign ID** — infer from context (e.g. "all campaigns" → `all`, "кампания X" → `X`).
+  Generate one automatically if none mentioned: `{topic}-{YYYY-MM}`. Only ask if truly ambiguous.
+- **Product / service** — skip if inferable from campaign name or prior context.
+- **Goal** — skip if not mentioned; default to "не указана, анализируем метрики as-is".
+- **Date range** — infer from request ("за вчера" → yesterday, "за неделю" → last 7 days).
+  Only ask if completely unspecified and critical to the analysis.
+
+Rule: **ask only what blocks you from proceeding.** If something can be inferred or defaulted, do it.
 
 ### Step 2 — Collect data
 
