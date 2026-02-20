@@ -49,9 +49,6 @@ openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
-if [ -n "$OPENAI_API_KEY" ]; then
-  openclaw config set auth.openai.apiKey "$OPENAI_API_KEY"
-fi
 openclaw config set channels.telegram.enabled true
 openclaw config set channels.telegram.streamMode partial
 # Access control: TELEGRAM_ALLOWLIST=@user1,@user2,123456789 → allowlist mode.
