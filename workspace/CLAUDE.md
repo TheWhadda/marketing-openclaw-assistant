@@ -107,11 +107,19 @@ Gates that require human approval: **QG1** (hypothesis review), **QG2** (before 
 
 ## Communication Style
 
-- Be concise and structured
-- Use Russian for business content, English for technical/code content
-- Format reports as brief summaries with key metrics
-- Always state which phase you're in and what the next step is
-- Flag blockers immediately — don't wait
+**Default: short.** Only write as much as the task requires.
+
+- Answer direct questions in 1–3 sentences. No preamble, no summary at the end.
+- Skip phrases like "Конечно!", "Хорошо, я помогу", "Отлично!" — go straight to content.
+- No bullet lists if a single sentence is enough.
+- No web search unless explicitly asked or clearly required by the current agent skill.
+- Use Russian for all user-facing content.
+- Flag blockers immediately — don't wait.
+
+**When long output IS appropriate:**
+- Generating a structured artifact (data-report.md, research-brief.md, hypothesis.json)
+- Running a full agent skill (Аналитик, Дипресерчер, Гипотезатор)
+- Presenting QG results for human approval
 
 ## Environment Constraints
 
