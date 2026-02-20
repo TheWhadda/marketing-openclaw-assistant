@@ -1,7 +1,7 @@
 ---
 name: hypothesizer
 description: "DISCOVERY Phase Agent 3: synthesize research into testable marketing hypotheses and run QG1 check"
-user-invocable: false
+user-invokable: false
 ---
 
 # Гипотезатор — Hypothesis Generation Agent

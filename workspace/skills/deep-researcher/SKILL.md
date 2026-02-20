@@ -1,7 +1,7 @@
 ---
 name: deep-researcher
 description: "DISCOVERY Phase Agent 2: deep research on competitors, market trends, and audience signals"
-user-invocable: false
+user-invokable: false
 ---
 
 # Дипресерчер — Deep Research Agent
