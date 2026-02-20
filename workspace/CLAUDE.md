@@ -17,7 +17,7 @@ When the user requests a DISCOVERY run (e.g., "запусти анализ", "н
 
 ### Step 1 — Invoke Аналитик
 Activate the `analyst` skill. Аналитик will:
-- Ask the user for campaign ID, product, goal, and historical data
+- Collect metrics data from the user (infers context silently, asks only for actual data)
 - Produce `workspace/artifacts/{campaign_id}/data-report.md`
 - Report back with a summary
 
