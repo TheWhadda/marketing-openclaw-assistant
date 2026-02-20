@@ -204,7 +204,7 @@ PRODUCTION (parallel where possible):
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| DISCOVERY | **In Progress (Skills MVP)** | Аналитик, Дипресерчер, Гипотезатор implemented as workspace skills |
+| DISCOVERY | **Complete (Skills MVP)** | Аналитик, Дипресерчер, Гипотезатор implemented as workspace skills |
 | PLANNING | Planned | |
 | PRODUCTION | Planned | |
 | EXECUTION | Planned | |
@@ -219,6 +219,6 @@ Campaign artifacts stored in `workspace/artifacts/{campaign_id}/`.
 
 - **Gateway:** [OpenClaw](https://openclaw.ai) — multi-channel AI gateway
 - **Agent runtime:** Claude Agent SDK (Pi agent in RPC mode)
-- **Model:** claude-opus-4-6 (primary), claude-sonnet-4-5 (fallback)
+- **Model:** claude-sonnet-4-5 (primary), claude-haiku-4-5-20251001 (fallback); override via `OPENCLAW_MODEL` env var
 - **Channels:** TBD (configured via OpenClaw)
 - **Storage:** OpenClaw workspace memory + future structured storage
