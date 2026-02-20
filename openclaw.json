@@ -26,6 +26,8 @@
         "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
         "anthropic/claude-opus-4-6": { alias: "Opus" },
         "anthropic/claude-haiku-4-5-20251001": { alias: "Haiku" },
+        "openai/gpt-4o-mini": { alias: "GPT-mini" },
+        "openai/gpt-4o": { alias: "GPT-4o" },
       },
     },
   },
