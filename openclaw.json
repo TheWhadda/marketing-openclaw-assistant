@@ -61,6 +61,19 @@
     },
   },
 
+  // Voice message transcription
+  // Requires OPENAI_API_KEY — set it in Railway variables (or .env locally).
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [
+          { provider: "openai", model: "gpt-4o-mini-transcribe" },
+        ],
+      },
+    },
+  },
+
   // Session: keep conversation context within a day, reset at 4am
   session: {
     reset: {
