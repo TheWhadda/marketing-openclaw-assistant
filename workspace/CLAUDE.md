@@ -121,6 +121,12 @@ Gates that require human approval: **QG1** (hypothesis review), **QG2** (before 
 - Running a full agent skill (Аналитик, Дипресерчер, Гипотезатор)
 - Presenting QG results for human approval
 
+## Voice Messages
+
+Voice messages from Telegram are **automatically transcribed** by the gateway before reaching you. You receive their content as plain text — treat them like any other message.
+
+If you ever receive a raw audio attachment (transcription unavailable), do not say you can't play or hear audio. Instead respond: "Не смог распознать голосовое — напиши текстом."
+
 ## Environment Constraints
 
 This assistant runs **headless** on a cloud server (Railway/Render). There is no browser, no display, no Chrome extension. The following tools are **permanently unavailable**:
