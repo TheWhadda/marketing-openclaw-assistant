@@ -65,6 +65,9 @@
   messages: {
     tts: {
       auto: "off",
+    },
+  },
+
   // Voice message transcription
   // Requires OPENAI_API_KEY — set it in Railway variables (or .env locally).
   tools: {
