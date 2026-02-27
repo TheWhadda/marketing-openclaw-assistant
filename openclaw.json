@@ -61,6 +61,13 @@
     },
   },
 
+  // Disable TTS — bot always responds with text, never voice messages.
+  messages: {
+    tts: {
+      auto: "off",
+    },
+  },
+
   // Session: keep conversation context within a day, reset at 4am
   session: {
     reset: {
