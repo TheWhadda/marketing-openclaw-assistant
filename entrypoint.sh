@@ -65,6 +65,11 @@ fi
 openclaw config set session.reset.mode daily
 openclaw config set session.reset.atHour 4
 openclaw config set session.reset.idleMinutes 240
+# Voice: disable TTS output and enable voice message transcription via OpenAI.
+# OPENAI_API_KEY must be set in the platform dashboard for transcription to work.
+openclaw config set messages.tts.auto off
+openclaw config set tools.media.audio.enabled true
+openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
