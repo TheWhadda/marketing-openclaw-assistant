@@ -47,7 +47,7 @@ openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
 # Disable auth entirely — headless Railway bot, no browser/device pairing possible or needed.
 # trustedProxies covers Railway's internal 10.x.x.x network used by exec tool and service mesh.
-openclaw config set gateway.auth none
+openclaw config set gateway.auth.mode none
 openclaw config set gateway.trustedProxies '["10.0.0.0/8","127.0.0.1/32","::1/128"]'
 openclaw config set gateway.controlUi.allowInsecureAuth true
 openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
