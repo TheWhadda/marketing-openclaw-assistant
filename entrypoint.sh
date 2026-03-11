@@ -75,7 +75,6 @@ openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 # Enable exec tool and run it on the gateway host so Railway env vars (YANDEX_DIRECT_TOKEN etc.) are accessible.
 # Default "sandbox" mode isolates the exec environment and loses env vars.
-openclaw config set tools.exec.enabled true
 openclaw config set tools.exec.host gateway
 openclaw config set tools.exec.security full
 echo "[entrypoint] Config applied."
