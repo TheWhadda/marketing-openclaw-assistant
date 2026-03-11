@@ -1,7 +1,7 @@
 ---
 name: yandex-direct
 description: Yandex Direct reporting agent — delivers campaign stats, search queries, custom reports, and period dynamics via Yandex Direct API v5 (read-only)
-metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"], "bins": ["curl"]}, "primaryEnv": "YANDEX_DIRECT_TOKEN"}}
+metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"], "bins": ["python3"]}, "primaryEnv": "YANDEX_DIRECT_TOKEN"}}
 ---
 
 # Яндекс.Директ — Reporting Agent
@@ -14,118 +14,144 @@ You pull campaign data from Yandex Direct API v5 and deliver structured reports.
 
 ## How to call the API
 
-**Always use `printf | tr -d '\n\r' | curl --data-binary @-`.**
+**Always use Python.** curl fails with error 8000 due to shell escaping. Python's `json.dumps`
+guarantees valid JSON and `urllib` sends it correctly every time.
 
-The Yandex API rejects JSON with newline characters (error 8000). `tr -d '\n\r'` strips them
-before sending, so you can write the JSON in any readable multi-line format.
+### Base pattern
 
-```bash
-printf '%s' '{
-  "params": { ... }
-}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @-
+Write this to a file, fill in the `params` block, then run it:
+
+```python
+python3 /tmp/yd.py
 ```
 
-> `$YANDEX_DIRECT_TOKEN` is in **double-quoted** `-H` header so the shell expands the variable.
-> The JSON inside `printf '%s' '...'` is in **single quotes** — safe from shell expansion.
+```python
+# /tmp/yd.py
+import urllib.request, urllib.error, json, os, sys
+
+TOKEN = os.environ.get('YANDEX_DIRECT_TOKEN', '')
+if not TOKEN:
+    sys.exit('YANDEX_DIRECT_TOKEN is not set')
+
+params = {
+    # FILL IN — see examples below
+}
+
+data = json.dumps({"params": params}).encode('utf-8')
+req = urllib.request.Request(
+    'https://api.direct.yandex.com/json/v5/reports',
+    data=data,
+    headers={
+        'Authorization': 'Bearer ' + TOKEN,
+        'Content-Type': 'application/json',
+        'Accept-Language': 'ru',
+        'processingMode': 'auto',
+    },
+    method='POST'
+)
+try:
+    resp = urllib.request.urlopen(req)
+    print(resp.read().decode('utf-8'))
+except urllib.error.HTTPError as e:
+    raw = e.read().decode('utf-8')
+    if e.code in (201, 202):
+        retry = e.headers.get('Retry-After', '?')
+        print(f'[building — retry in {retry}s]')
+    else:
+        print(f'HTTP {e.code}: {raw}')
+        sys.exit(1)
+```
+
+> **HTTP 200** — report ready, output is TSV.
+> **HTTP 201/202** — building, wait `Retry-After` seconds and run again.
 
 ---
 
-## Report types
+## Report params
+
+Fill the `params` dict above with one of these blocks.
 
 ### Campaign performance — preset period
 
 Preset periods: `YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`.
-**No `DateFrom`/`DateTo` for preset periods.**
+**No `DateFrom`/`DateTo` for preset periods** — omit them entirely.
 
-```bash
-printf '%s' '{
-  "params": {
+```python
+params = {
     "SelectionCriteria": {},
-    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],
+    "FieldNames": [
+        "CampaignId", "CampaignName",
+        "Impressions", "Clicks", "Ctr",
+        "AvgCpc", "Cost", "Conversions", "CostPerConversion", "ConversionRate"
+    ],
     "ReportName": "campaigns-yesterday",
     "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
     "DateRangeType": "YESTERDAY",
     "Format": "TSV",
     "IncludeVAT": "YES",
     "IncludeDiscount": "NO"
-  }
-}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @-
+}
 ```
 
 ### Campaign performance — custom date range
 
-```bash
-printf '%s' '{
-  "params": {
-    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
-    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],
+```python
+params = {
+    "SelectionCriteria": {
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
+    },
+    "FieldNames": [
+        "CampaignId", "CampaignName",
+        "Impressions", "Clicks", "Ctr",
+        "AvgCpc", "Cost", "Conversions", "CostPerConversion", "ConversionRate"
+    ],
     "ReportName": "campaigns-custom",
     "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
     "DateRangeType": "CUSTOM_DATE",
     "Format": "TSV",
     "IncludeVAT": "YES",
     "IncludeDiscount": "NO"
-  }
-}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @-
+}
 ```
 
 ### Search queries
 
-```bash
-printf '%s' '{
-  "params": {
-    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
-    "FieldNames": ["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],
+```python
+params = {
+    "SelectionCriteria": {
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
+    },
+    "FieldNames": [
+        "Query", "Impressions", "Clicks", "Ctr", "AvgCpc", "Cost", "Conversions"
+    ],
     "ReportName": "search-queries",
     "ReportType": "SEARCH_QUERY_PERFORMANCE_REPORT",
     "DateRangeType": "CUSTOM_DATE",
     "Format": "TSV",
     "IncludeVAT": "YES",
     "IncludeDiscount": "NO"
-  }
-}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @-
+}
 ```
 
 ### Custom report (any dimension/metric)
 
-```bash
-printf '%s' '{
-  "params": {
-    "SelectionCriteria": {"CampaignIds": [CAMPAIGN_ID], "DateFrom": "DATE_FROM", "DateTo": "DATE_TO"},
-    "FieldNames": [CHOSEN_FIELDS],
+```python
+params = {
+    "SelectionCriteria": {
+        "CampaignIds": [CAMPAIGN_ID],   # or omit to get all campaigns
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
+    },
+    "FieldNames": [CHOSEN_FIELDS],      # see dimensions/metrics table below
     "ReportName": "custom-report",
     "ReportType": "CUSTOM_REPORT",
     "DateRangeType": "CUSTOM_DATE",
     "Format": "TSV",
     "IncludeVAT": "YES",
     "IncludeDiscount": "NO"
-  }
-}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @-
+}
 ```
 
 ---
@@ -155,40 +181,38 @@ printf '%s' '{
 | `Impressions` | Показы |
 | `Clicks` | Клики |
 | `Ctr` | CTR % |
-| `AvgCpc` | Средний CPC (в микрорублях, ÷ 1 000 000 = ₽) |
-| `Cost` | Расход с НДС (в микрорублях, ÷ 1 000 000 = ₽) |
+| `AvgCpc` | Средний CPC |
+| `Cost` | Расход (с НДС) |
 | `Conversions` | Конверсии |
-| `CostPerConversion` | CPA (в микрорублях) |
+| `CostPerConversion` | CPA |
 | `ConversionRate` | CR % |
 | `Cpm` | CPM |
 | `BounceRate` | Отказы % |
 | `AvgEffectiveBid` | Средняя ставка |
 | `Placement` | Площадка (РСЯ) |
 
-> **Cost values are in microroubles.** Divide by 1 000 000 to get ₽.
-> Example: `17640000` = ₽17.64, `952590000` = ₽952.59
-
 ---
 
 ## Period-over-period dynamics
 
-Run the campaign performance command twice with different date ranges and different `ReportName` values.
-Compute and display deltas:
+Run the base pattern **twice** with different `DateFrom`/`DateTo` and different `ReportName`.
+Then compute and display deltas:
 
 ```
-delta_pct = (value_B - value_A) / value_A × 100
+delta_abs = value_B - value_A
+delta_pct = (delta_abs / value_A) * 100
 ```
 
 Output format:
 ```
 📊 Динамика: {period_A} → {period_B}
 
-Метрика   | {A}     | {B}     | Δ
-Показы    | 12 450  | 14 200  | ▲ +14.1%
-Клики     | 380     | 312     | ▼ −17.9%
-CTR       | 3.05%   | 2.20%   | ▼ −0.85 пп
-CPC       | ₽42.10  | ₽51.30  | ▲ +21.8%
-Расход    | ₽16 000 | ₽16 006 | → +0.04%
+Метрика   | {A}    | {B}    | Δ
+Показы    | 12 450 | 14 200 | ▲ +14.1%
+Клики     | 380    | 312    | ▼ −17.9%
+CTR       | 3.05%  | 2.20%  | ▼ −0.85 пп
+CPC       | ₽42.10 | ₽51.30 | ▲ +21.8%
+Расход    | ₽16 000| ₽16 006| → +0.04%
 ```
 
 ▲ improvement · ▼ degradation · → change < 2%
@@ -226,6 +250,7 @@ When the user gives targets, exclusions, or budget context — save to memory:
 
 ```
 type: yd-adjustment
+campaign_id: all
 date: TODAY
 ---
 Budget March: 80 000 ₽
@@ -237,10 +262,8 @@ On every report run: load saved adjustments and apply them before presenting res
 
 ---
 
-## API notes
+## Notes
 
-- **HTTP 200** — report ready, output is TSV
-- **HTTP 201/202** — building, wait `Retry-After` seconds and retry
-- `ReportName` must be unique per advertiser. Add a date suffix to avoid collisions: `campaigns-yesterday-20260310`
-- Agency accounts: add `-H "Client-Login: LOGIN"` to the curl command
-- Sandbox for testing: replace `api.direct.yandex.com` with `api-sandbox.direct.yandex.ru`
+- `ReportName` must be unique per advertiser per request. Add a timestamp suffix if reusing names: `campaigns-yesterday-1741660800`
+- Agency accounts: add `'Client-Login': 'LOGIN'` to headers
+- Sandbox: replace host with `api-sandbox.direct.yandex.ru`
