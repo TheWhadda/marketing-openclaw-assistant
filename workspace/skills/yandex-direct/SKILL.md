@@ -71,6 +71,9 @@ except urllib.error.HTTPError as e:
 
 Fill the `params` dict above with one of these blocks.
 
+**Use ONLY the fields shown in the examples below. Do NOT add any extra fields.**
+Invalid fields that must never appear: `FormatVersion`, `Lang`, `Limit`, `Offset`, `Goals`, `Attribution`.
+
 ### Campaign performance — preset period
 
 Preset periods: `YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`.
