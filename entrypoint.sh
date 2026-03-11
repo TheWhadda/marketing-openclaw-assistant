@@ -45,12 +45,15 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
-# Trust Railway's internal network so exec tool result delivery (Session Send) bypasses pairing.
-# 10.0.0.0/8 covers Railway's internal IPs; loopback covers same-process connections.
 if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
   echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
   exit 1
 fi
+# Clear stale device pairing state on every boot.
+# In headless deployments paired.json accumulates ghost records that block all
+# internal WebSocket connections (exec Session Send, etc.) with "pairing required".
+# dangerouslyDisableDeviceAuth lets OpenClaw operate without completing pairing.
+rm -f "$STATE_DIR/devices/paired.json" "$STATE_DIR/devices/pending.json"
 openclaw config set gateway.trustedProxies '["10.0.0.0/8","127.0.0.1/32","::1/128"]'
 openclaw config set gateway.controlUi.allowInsecureAuth true
 openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
@@ -77,11 +80,6 @@ openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
-# Run exec on the node (Railway container) for direct internet access and env var visibility.
-# "gateway" routes outbound traffic through the OpenClaw relay which requires device pairing.
-# "node" executes directly on the container — no relay, no pairing, env vars available.
-openclaw config set tools.exec.host node
-openclaw config set tools.exec.security full
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
