@@ -66,6 +66,7 @@ openclaw config set session.reset.mode daily
 openclaw config set session.reset.atHour 4
 openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
+openclaw config set tools.exec.host gateway
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 echo "[entrypoint] Config applied."
