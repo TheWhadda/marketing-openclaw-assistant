@@ -45,6 +45,10 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
+# Disable device pairing — gateway connects to itself via LAN IP (not localhost)
+# which triggers pairing check for ALL internal tools (sessions_list, exec, etc.).
+openclaw config set gateway.controlUi.allowInsecureAuth true
+openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
 openclaw config set channels.telegram.enabled true
