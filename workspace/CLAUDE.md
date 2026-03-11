@@ -138,29 +138,16 @@ This assistant runs **headless** on a cloud server (Railway/Render). There is no
 
 ## Yandex Direct Reports
 
-When the user asks for any Yandex Direct data (campaign stats, clicks, cost, CTR, search queries, etc.) — fetch and present it immediately using exec/bash. Do NOT use web_search. Do NOT activate a skill. Do NOT ask for clarification. Run these commands in order:
+When the user asks for Yandex Direct data, use exec/bash to run **one of these exact commands** (do not modify the path, do not use any other command):
 
-**Step 1** — check available files:
-```bash
-ls /data/workspace/yd-cache/
-```
+- вчера / yesterday: `cat /data/workspace/yd-cache/yesterday.tsv`
+- 7 дней: `cat /data/workspace/yd-cache/last7days.tsv`
+- 30 дней: `cat /data/workspace/yd-cache/last30days.tsv`
+- месяц: `cat /data/workspace/yd-cache/thismonth.tsv`
 
-**Step 2** — check freshness:
-```bash
-cat /data/workspace/yd-cache/meta.json
-```
+TSV: first row = headers, Cost/AvgCpc/CostPerConversion in microns (÷1 000 000 = rubles). Present as table, start with `📊 [Яндекс.Директ]`.
 
-**Step 3** — read the report (choose by period):
-- вчера → `cat /data/workspace/yd-cache/yesterday.tsv`
-- 7 дней → `cat /data/workspace/yd-cache/last7days.tsv`
-- 30 дней → `cat /data/workspace/yd-cache/last30days.tsv`
-- месяц → `cat /data/workspace/yd-cache/thismonth.tsv`
-
-**TSV format:** tab-separated, first row = headers, Cost/AvgCpc/CostPerConversion in microns (÷1 000 000 = rubles).
-
-Present the report as a clean table with totals. Start response with `📊 [Яндекс.Директ]`. Flag anomalies: CTR < 1%, CPA > 2× average, zero conversions with cost > 0.
-
-If files are missing → «Данные ещё не загружены — подожди 2–3 минуты и повтори.»
+If file missing: «Данные ещё не загружены — подожди 2–3 минуты.»
 
 ## What You Can Do Now
 
