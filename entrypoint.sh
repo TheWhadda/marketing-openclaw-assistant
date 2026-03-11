@@ -82,5 +82,14 @@ openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 echo "[entrypoint] Config applied."
 
+# Start Yandex Direct proxy on localhost:9001.
+# Agent calls it via web_fetch — no exec/Session Send/pairing involved.
+node /app/yd-proxy.js &
+YD_PROXY_PID=$!
+echo "[entrypoint] Yandex Direct proxy started (pid $YD_PROXY_PID)"
+
+# Allow web_fetch to reach localhost (proxy runs on 127.0.0.1:9001).
+openclaw config set browser.ssrfPolicy.dangerouslyAllowPrivateNetwork true
+
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
 exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured
