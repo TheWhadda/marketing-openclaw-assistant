@@ -16,34 +16,35 @@ You read pre-fetched Yandex Direct data from workspace cache files and deliver s
 
 Reports are fetched automatically every hour by a background process and stored in `/data/workspace/yd-cache/`.
 
-**Use the exec/bash tool to read the files. Run each command exactly as shown below — do not reformat or split them.**
+**Use the exec/bash tool. Always start with Step 1 regardless of what the user asked. Do NOT invent file paths — use only paths revealed by Step 1.**
 
-### Step 1 — Check freshness
+### Step 1 — Discover available files (ALWAYS run this first)
+
+```bash
+ls /data/workspace/yd-cache/
+```
+
+If the directory does not exist or is empty → respond with the error message from the Error Handling section and stop.
+
+### Step 2 — Read meta (freshness check)
 
 ```bash
 cat /data/workspace/yd-cache/meta.json
 ```
 
-### Step 2 — Read the report for the requested period
+### Step 3 — Read the report file for the requested period
 
-**Yesterday:**
+| User request | File |
+|---|---|
+| вчера / yesterday | `/data/workspace/yd-cache/yesterday.tsv` |
+| 7 дней / last 7 days | `/data/workspace/yd-cache/last7days.tsv` |
+| 30 дней / last 30 days | `/data/workspace/yd-cache/last30days.tsv` |
+| месяц / this month | `/data/workspace/yd-cache/thismonth.tsv` |
+
+Run the exact path from the table. Example for yesterday:
+
 ```bash
 cat /data/workspace/yd-cache/yesterday.tsv
-```
-
-**Last 7 days:**
-```bash
-cat /data/workspace/yd-cache/last7days.tsv
-```
-
-**Last 30 days:**
-```bash
-cat /data/workspace/yd-cache/last30days.tsv
-```
-
-**This month:**
-```bash
-cat /data/workspace/yd-cache/thismonth.tsv
 ```
 
 ---
