@@ -1,6 +1,6 @@
 ---
 name: yandex-direct
-description: Yandex Direct reporting agent — reads pre-fetched campaign reports from workspace cache and delivers structured reports
+description: Yandex Direct reporting agent — reads pre-fetched campaign data from workspace cache via exec and delivers structured reports
 metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"]}}}
 ---
 
@@ -14,26 +14,46 @@ You read pre-fetched Yandex Direct data from workspace cache files and deliver s
 
 ## Data Source
 
-Reports are fetched automatically every hour and stored in the workspace.
+Reports are fetched automatically every hour by a background process and stored in `/data/workspace/yd-cache/`.
 
-**Step 1:** Read `yd-cache/meta.json` to get `updatedAt` and check file status.
-**Step 2:** Read the TSV file for the requested period.
+**Use the exec/bash tool to read the files. Run each command exactly as shown below — do not reformat or split them.**
 
-| File | Period |
-|------|--------|
-| `yd-cache/yesterday.tsv` | Вчера |
-| `yd-cache/last7days.tsv` | Последние 7 дней |
-| `yd-cache/last30days.tsv` | Последние 30 дней |
-| `yd-cache/thismonth.tsv` | Текущий месяц |
+### Step 1 — Check freshness
+
+```bash
+cat /data/workspace/yd-cache/meta.json
+```
+
+### Step 2 — Read the report for the requested period
+
+**Yesterday:**
+```bash
+cat /data/workspace/yd-cache/yesterday.tsv
+```
+
+**Last 7 days:**
+```bash
+cat /data/workspace/yd-cache/last7days.tsv
+```
+
+**Last 30 days:**
+```bash
+cat /data/workspace/yd-cache/last30days.tsv
+```
+
+**This month:**
+```bash
+cat /data/workspace/yd-cache/thismonth.tsv
+```
 
 ---
 
 ## TSV Format
 
-- Row 1: column headers (tab-separated)
+- Row 1: tab-separated column headers
 - Rows 2+: one row per campaign
 - Fields: `CampaignId`, `CampaignName`, `Impressions`, `Clicks`, `Ctr`, `AvgCpc`, `Cost`, `Conversions`, `CostPerConversion`, `ConversionRate`
-- `Cost`, `AvgCpc`, `CostPerConversion` are in **microns** — divide by 1,000,000 to get rubles
+- `Cost`, `AvgCpc`, `CostPerConversion` are in **microns** — divide by 1,000,000 for rubles
 - `--` means no data for that cell
 
 ---
@@ -42,7 +62,7 @@ Reports are fetched automatically every hour and stored in the workspace.
 
 ```
 📊 [Яндекс.Директ] {period_label}
-Обновлено: {updatedAt}
+Обновлено: {updatedAt from meta.json}
 
 Кампания           | Показы  | Клики | CTR   | Расход    | CPA
 {CampaignName}     | {Impr}  | {Cl}  | {CTR} | ₽ {Cost}  | ₽ {CPA}
@@ -79,7 +99,7 @@ CPA            | ₽667       | ₽842       | ▼ +26.2%
 
 ## Capability 3 — Accept and Remember Adjustments
 
-Store user corrections, targets, and context in memory:
+Store user corrections in memory:
 
 ```
 type: yd-adjustment
@@ -88,7 +108,6 @@ date: {today}
 ---
 Budget March: 80 000 ₽
 Target CPA: ≤ 500 ₽
-Exclude campaign 123 (paused)
 ```
 
 On every report: retrieve and apply saved adjustments.
@@ -113,8 +132,8 @@ Default thresholds: CTR < 1%, CPA > 2× average, Conversions = 0 with Cost > 0.
 
 ## Error Handling
 
-- File missing or `meta.json` shows `ok: false` → «Данные ещё не загружены — подожди несколько минут и повтори запрос.»
-- `meta.json` missing entirely → «Кэш не найден — сервер только что запустился. Попробуй через 2–3 минуты.»
+- File not found → «Данные ещё не загружены — подожди 2–3 минуты и повтори.»
+- `meta.json` missing → «Кэш не найден — сервер только что запустился. Попробуй через 2–3 минуты.»
 
 ---
 
