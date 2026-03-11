@@ -73,6 +73,9 @@ openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
+# Run exec/bash tool on the gateway host so Railway env vars (YANDEX_DIRECT_TOKEN etc.) are accessible.
+# Default "sandbox" mode isolates the exec environment and loses env vars.
+openclaw config set tools.exec.host gateway
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
