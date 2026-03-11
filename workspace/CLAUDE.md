@@ -138,7 +138,29 @@ This assistant runs **headless** on a cloud server (Railway/Render). There is no
 
 ## Yandex Direct Reports
 
-When the user asks for any Yandex Direct data (campaign stats, clicks, cost, CTR, search queries, etc.) — activate the `yandex-direct` skill immediately. The skill reads pre-cached files from the workspace. Do not use web_search. Do not ask for clarification. Just read and report.
+When the user asks for any Yandex Direct data (campaign stats, clicks, cost, CTR, search queries, etc.) — fetch and present it immediately using exec/bash. Do NOT use web_search. Do NOT activate a skill. Do NOT ask for clarification. Run these commands in order:
+
+**Step 1** — check available files:
+```bash
+ls /data/workspace/yd-cache/
+```
+
+**Step 2** — check freshness:
+```bash
+cat /data/workspace/yd-cache/meta.json
+```
+
+**Step 3** — read the report (choose by period):
+- вчера → `cat /data/workspace/yd-cache/yesterday.tsv`
+- 7 дней → `cat /data/workspace/yd-cache/last7days.tsv`
+- 30 дней → `cat /data/workspace/yd-cache/last30days.tsv`
+- месяц → `cat /data/workspace/yd-cache/thismonth.tsv`
+
+**TSV format:** tab-separated, first row = headers, Cost/AvgCpc/CostPerConversion in microns (÷1 000 000 = rubles).
+
+Present the report as a clean table with totals. Start response with `📊 [Яндекс.Директ]`. Flag anomalies: CTR < 1%, CPA > 2× average, zero conversions with cost > 0.
+
+If files are missing → «Данные ещё не загружены — подожди 2–3 минуты и повтори.»
 
 ## What You Can Do Now
 
