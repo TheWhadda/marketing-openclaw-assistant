@@ -47,8 +47,9 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
-# Disable Control UI pairing — bot is headless on Railway, Telegram is the only entry point.
+# Disable Control UI device auth — bot is headless on Railway, Telegram is the only entry point.
 openclaw config set gateway.controlUi.allowInsecureAuth true
+openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
 openclaw config set channels.telegram.enabled true
