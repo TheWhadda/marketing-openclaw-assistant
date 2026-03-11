@@ -17,7 +17,7 @@ When the user requests a DISCOVERY run (e.g., "запусти анализ", "н
 
 ### Step 1 — Invoke Аналитик
 Activate the `analyst` skill. Аналитик will:
-- Ask the user for campaign ID, product, goal, and historical data
+- Collect metrics data from the user (infers context silently, asks only for actual data)
 - Produce `workspace/artifacts/{campaign_id}/data-report.md`
 - Report back with a summary
 
@@ -120,6 +120,12 @@ Gates that require human approval: **QG1** (hypothesis review), **QG2** (before 
 - Generating a structured artifact (data-report.md, research-brief.md, hypothesis.json)
 - Running a full agent skill (Аналитик, Дипресерчер, Гипотезатор)
 - Presenting QG results for human approval
+
+## Voice Messages
+
+Voice messages from Telegram are **automatically transcribed** by the gateway before reaching you. You receive their content as plain text — treat them like any other message.
+
+If you ever receive a raw audio attachment (transcription unavailable), do not say you can't play or hear audio. Instead respond: "Не смог распознать голосовое — напиши текстом."
 
 ## Environment Constraints
 
