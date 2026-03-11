@@ -26,6 +26,8 @@
         "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
         "anthropic/claude-opus-4-6": { alias: "Opus" },
         "anthropic/claude-haiku-4-5-20251001": { alias: "Haiku" },
+        "openai/gpt-4o-mini": { alias: "GPT-mini" },
+        "openai/gpt-4o": { alias: "GPT-4o" },
       },
     },
   },
@@ -58,6 +60,27 @@
       },
     },
   },
+
+  // Disable TTS — bot always responds with text, never voice messages.
+  messages: {
+    tts: {
+      auto: "off",
+    },
+  },
+
+  // Voice message transcription
+  // Requires OPENAI_API_KEY — set it in Railway variables (or .env locally).
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [
+          { provider: "openai", model: "gpt-4o-mini-transcribe" },
+        ],
+      },
+    },
+  },
+
 
   // Session: keep conversation context within a day, reset at 4am
   session: {
