@@ -4,16 +4,12 @@ FROM node:22-bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates curl python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# pnpm is built into Node 22 via corepack — no extra install needed.
-# It uses a content-addressable store with hard links so memory usage
-# during install is much lower than npm's flat copy approach.
-RUN corepack enable pnpm
-
 WORKDIR /app
 
-# Install dependencies first (Railway caches this layer until package.json changes)
-COPY package.json ./
-RUN pnpm install --prod --no-lockfile
+# Install dependencies — package-lock.json is committed so Docker layer is cached
+# between deploys as long as dependencies don't change.
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 # Add local bin to PATH so entrypoint.sh can call `openclaw` directly
 ENV PATH="/app/node_modules/.bin:$PATH"

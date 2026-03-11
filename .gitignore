@@ -10,7 +10,7 @@ workspace/skills/.clawhub/
 
 # Node
 node_modules/
-package-lock.json
+# package-lock.json is committed for reproducible Docker builds
 
 # Secrets
 .env
