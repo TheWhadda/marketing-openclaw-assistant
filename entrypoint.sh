@@ -79,9 +79,10 @@ openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
-# Enable exec tool and run it on the gateway host so Railway env vars (YANDEX_DIRECT_TOKEN etc.) are accessible.
-# Default "sandbox" mode isolates the exec environment and loses env vars.
-openclaw config set tools.exec.host gateway
+# Run exec on the node (Railway container) for direct internet access and env var visibility.
+# "gateway" routes outbound traffic through the OpenClaw relay which requires device pairing.
+# "node" executes directly on the container — no relay, no pairing, env vars available.
+openclaw config set tools.exec.host node
 openclaw config set tools.exec.security full
 echo "[entrypoint] Config applied."
 
