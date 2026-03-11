@@ -71,8 +71,10 @@ except urllib.error.HTTPError as e:
 
 Fill the `params` dict above with one of these blocks.
 
-**Use ONLY the fields shown in the examples below. Do NOT add any extra fields.**
-Invalid fields that must never appear: `FormatVersion`, `Lang`, `Limit`, `Offset`, `Goals`, `Attribution`.
+**The params dict accepts EXACTLY these keys and no others:**
+`SelectionCriteria`, `FieldNames`, `ReportName`, `ReportType`, `DateRangeType`, `Format`, `IncludeVAT`, `IncludeDiscount`.
+
+Any other key will cause an API error. Do not invent fields. Copy the examples below exactly.
 
 ### Campaign performance — preset period
 
