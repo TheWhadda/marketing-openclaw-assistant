@@ -33,6 +33,12 @@ if [ -d "/app/workspace-seed/skills" ]; then
   echo "[entrypoint] Skills synced."
 fi
 
+if [ -d "/app/workspace-seed/scripts" ]; then
+  mkdir -p "$WORKSPACE_DIR/scripts"
+  cp -r /app/workspace-seed/scripts/. "$WORKSPACE_DIR/scripts/"
+  echo "[entrypoint] Scripts synced."
+fi
+
 # OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
 # Set it in the platform dashboard (Railway/Render): OPENCLAW_GATEWAY_TOKEN → any strong secret.
 if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
