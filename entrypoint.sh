@@ -39,14 +39,6 @@ if [ -d "/app/workspace-seed/scripts" ]; then
   echo "[entrypoint] Scripts synced."
 fi
 
-# OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
-# Set it in the platform dashboard (Railway/Render): OPENCLAW_GATEWAY_TOKEN → any strong secret.
-if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
-  echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
-  echo "[entrypoint] Add it in your platform dashboard: OPENCLAW_GATEWAY_TOKEN=<any secret>"
-  exit 1
-fi
-
 # Apply config using `openclaw config set` (idempotent, writes proper metadata).
 # This runs on every boot to ensure settings survive platform-triggered config rewrites.
 # Seeding a raw openclaw.json is avoided — openclaw overwrites files lacking internal metadata.
@@ -87,4 +79,4 @@ openclaw config set tools.exec.security full
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
-exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured
+exec openclaw gateway run --port "$PORT" --bind lan --auth none --allow-unconfigured
