@@ -70,6 +70,9 @@ openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 echo "[entrypoint] Config applied."
 
+echo "[entrypoint] Starting yd-proxy (background data fetcher)..."
+node /app/yd-proxy.js &
+
 echo "[entrypoint] Starting proxy on 0.0.0.0:$PORT → 127.0.0.1:$GATEWAY_INTERNAL_PORT"
 GATEWAY_INTERNAL_PORT="$GATEWAY_INTERNAL_PORT" PORT="$PORT" node /app/proxy.js &
 
