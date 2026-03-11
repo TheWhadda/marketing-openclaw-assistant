@@ -19,32 +19,52 @@ Auth: `Authorization: Bearer $YANDEX_DIRECT_TOKEN`
 
 Pre-built report types covering the most common analysis needs.
 
+### How to send requests (important)
+
+**Always use a temp file + heredoc.** Multi-line JSON inside `-d '...'` breaks when executed
+programmatically (shell escaping issues → error 8000). This pattern is reliable in all contexts:
+
+```bash
+cat > /tmp/yd_req.json << 'ENDJSON'
+{ "BODY": "SEE EXAMPLES BELOW" }
+ENDJSON
+curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @/tmp/yd_req.json
+```
+
 ### Campaign performance (preset period)
 
 For preset periods (`YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`):
 **do NOT include `DateFrom`/`DateTo`** — the API rejects the request if both are present.
 
 ```bash
+cat > /tmp/yd_req.json << 'ENDJSON'
+{
+  "params": {
+    "SelectionCriteria": {},
+    "FieldNames": [
+      "CampaignId","CampaignName","Impressions","Clicks","Ctr",
+      "AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"
+    ],
+    "ReportName": "campaign-report",
+    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+    "DateRangeType": "YESTERDAY",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+  }
+}
+ENDJSON
 curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept-Language: ru" \
   -H "processingMode: auto" \
-  -d '{
-    "params": {
-      "SelectionCriteria": {},
-      "FieldNames": [
-        "CampaignId","CampaignName","Impressions","Clicks","Ctr",
-        "AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"
-      ],
-      "ReportName": "standard-campaign-report",
-      "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-      "DateRangeType": "YESTERDAY",
-      "Format": "TSV",
-      "IncludeVAT": "YES",
-      "IncludeDiscount": "NO"
-    }
-  }'
+  --data-binary @/tmp/yd_req.json
 ```
 
 > Replace `"YESTERDAY"` with `"LAST_7_DAYS"`, `"LAST_30_DAYS"`, `"THIS_MONTH"`, or `"LAST_MONTH"` as needed.
@@ -53,21 +73,25 @@ curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
 ### Search queries report
 
 ```bash
+cat > /tmp/yd_req.json << 'ENDJSON'
+{
+  "params": {
+    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
+    "FieldNames": ["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],
+    "ReportName": "search-queries",
+    "ReportType": "SEARCH_QUERY_PERFORMANCE_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES"
+  }
+}
+ENDJSON
 curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
   -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
   -H "processingMode: auto" \
-  -d '{
-    "params": {
-      "SelectionCriteria": {"DateFrom": "DATE_FROM", "DateTo": "DATE_TO"},
-      "FieldNames": ["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],
-      "ReportName": "search-queries",
-      "ReportType": "SEARCH_QUERY_PERFORMANCE_REPORT",
-      "DateRangeType": "CUSTOM_DATE",
-      "Format": "TSV",
-      "IncludeVAT": "YES"
-    }
-  }'
+  --data-binary @/tmp/yd_req.json
 ```
 
 ---
@@ -81,25 +105,29 @@ Build a report for any dimension/metric combination the user requests.
 Replace `FieldNames` with any combination from the table below.
 
 ```bash
+cat > /tmp/yd_req.json << 'ENDJSON'
+{
+  "params": {
+    "SelectionCriteria": {
+      "CampaignIds": [CAMPAIGN_ID],
+      "DateFrom": "DATE_FROM",
+      "DateTo": "DATE_TO"
+    },
+    "FieldNames": [CHOSEN_FIELDS],
+    "ReportName": "custom-report",
+    "ReportType": "CUSTOM_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES"
+  }
+}
+ENDJSON
 curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
   -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
   -H "processingMode: auto" \
-  -d '{
-    "params": {
-      "SelectionCriteria": {
-        "CampaignIds": [CAMPAIGN_ID],
-        "DateFrom": "DATE_FROM",
-        "DateTo": "DATE_TO"
-      },
-      "FieldNames": [CHOSEN_FIELDS],
-      "ReportName": "custom-report",
-      "ReportType": "CUSTOM_REPORT",
-      "DateRangeType": "CUSTOM_DATE",
-      "Format": "TSV",
-      "IncludeVAT": "YES"
-    }
-  }'
+  --data-binary @/tmp/yd_req.json
 ```
 
 ### Available dimensions (group by)
@@ -146,11 +174,28 @@ two periods and compute the delta.
 ### Step 1 — Fetch period A and period B
 
 ```bash
-# Period A (e.g. last week)
-curl ... -d '{"params": {"DateFrom": "PERIOD_A_START", "DateTo": "PERIOD_A_END", ...}}'
+# Period A
+cat > /tmp/yd_req.json << 'ENDJSON'
+{
+  "params": {
+    "SelectionCriteria": {"DateFrom": "PERIOD_A_START", "DateTo": "PERIOD_A_END"},
+    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion"],
+    "ReportName": "dynamics-period-a",
+    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES"
+  }
+}
+ENDJSON
+curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @/tmp/yd_req.json
 
-# Period B (e.g. this week)
-curl ... -d '{"params": {"DateFrom": "PERIOD_B_START", "DateTo": "PERIOD_B_END", ...}}'
+# Period B — same FieldNames, change dates and ReportName
 ```
 
 ### Step 2 — Compute and present deltas
