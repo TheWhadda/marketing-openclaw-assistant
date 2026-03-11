@@ -14,20 +14,24 @@ You pull campaign data from Yandex Direct API v5 and deliver structured reports.
 
 ## How to call the API
 
-**Use curl with single-line compact JSON in single quotes.**
-Multi-line JSON causes error 8000. All JSON must be on ONE line.
+**Always use `printf | tr -d '\n\r' | curl --data-binary @-`.**
+
+The Yandex API rejects JSON with newline characters (error 8000). `tr -d '\n\r'` strips them
+before sending, so you can write the JSON in any readable multi-line format.
 
 ```bash
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+printf '%s' '{
+  "params": { ... }
+}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
   -H "Content-Type: application/json" \
   -H "Accept-Language: ru" \
   -H "processingMode: auto" \
-  -d '{"params": PARAMS_ON_ONE_LINE }'
+  --data-binary @-
 ```
 
-> `$YANDEX_DIRECT_TOKEN` must be in **double-quoted** header so the shell expands it.
-> The `-d` JSON body must be in **single quotes** — no variable expansion needed inside.
+> `$YANDEX_DIRECT_TOKEN` is in **double-quoted** `-H` header so the shell expands the variable.
+> The JSON inside `printf '%s' '...'` is in **single quotes** — safe from shell expansion.
 
 ---
 
@@ -39,25 +43,89 @@ Preset periods: `YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_
 **No `DateFrom`/`DateTo` for preset periods.**
 
 ```bash
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" -H "Content-Type: application/json" -H "Accept-Language: ru" -H "processingMode: auto" -d '{"params":{"SelectionCriteria":{},"FieldNames":["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],"ReportName":"campaigns-yesterday","ReportType":"CAMPAIGN_PERFORMANCE_REPORT","DateRangeType":"YESTERDAY","Format":"TSV","IncludeVAT":"YES","IncludeDiscount":"NO"}}'
+printf '%s' '{
+  "params": {
+    "SelectionCriteria": {},
+    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],
+    "ReportName": "campaigns-yesterday",
+    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+    "DateRangeType": "YESTERDAY",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+  }
+}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @-
 ```
 
 ### Campaign performance — custom date range
 
 ```bash
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" -H "Content-Type: application/json" -H "Accept-Language: ru" -H "processingMode: auto" -d '{"params":{"SelectionCriteria":{"DateFrom":"2026-03-01","DateTo":"2026-03-10"},"FieldNames":["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],"ReportName":"campaigns-custom","ReportType":"CAMPAIGN_PERFORMANCE_REPORT","DateRangeType":"CUSTOM_DATE","Format":"TSV","IncludeVAT":"YES","IncludeDiscount":"NO"}}'
+printf '%s' '{
+  "params": {
+    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
+    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"],
+    "ReportName": "campaigns-custom",
+    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+  }
+}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @-
 ```
 
 ### Search queries
 
 ```bash
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" -H "Content-Type: application/json" -H "Accept-Language: ru" -H "processingMode: auto" -d '{"params":{"SelectionCriteria":{"DateFrom":"2026-03-01","DateTo":"2026-03-10"},"FieldNames":["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],"ReportName":"search-queries","ReportType":"SEARCH_QUERY_PERFORMANCE_REPORT","DateRangeType":"CUSTOM_DATE","Format":"TSV","IncludeVAT":"YES","IncludeDiscount":"NO"}}'
+printf '%s' '{
+  "params": {
+    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
+    "FieldNames": ["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],
+    "ReportName": "search-queries",
+    "ReportType": "SEARCH_QUERY_PERFORMANCE_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+  }
+}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @-
 ```
 
 ### Custom report (any dimension/metric)
 
 ```bash
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" -H "Content-Type: application/json" -H "Accept-Language: ru" -H "processingMode: auto" -d '{"params":{"SelectionCriteria":{"CampaignIds":[CAMPAIGN_ID],"DateFrom":"DATE_FROM","DateTo":"DATE_TO"},"FieldNames":[CHOSEN_FIELDS],"ReportName":"custom-report","ReportType":"CUSTOM_REPORT","DateRangeType":"CUSTOM_DATE","Format":"TSV","IncludeVAT":"YES","IncludeDiscount":"NO"}}'
+printf '%s' '{
+  "params": {
+    "SelectionCriteria": {"CampaignIds": [CAMPAIGN_ID], "DateFrom": "DATE_FROM", "DateTo": "DATE_TO"},
+    "FieldNames": [CHOSEN_FIELDS],
+    "ReportName": "custom-report",
+    "ReportType": "CUSTOM_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+  }
+}' | tr -d '\n\r' | curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept-Language: ru" \
+  -H "processingMode: auto" \
+  --data-binary @-
 ```
 
 ---
