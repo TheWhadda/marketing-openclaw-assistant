@@ -1,7 +1,7 @@
 ---
 name: yandex-direct
-description: Yandex Direct reporting agent — delivers custom and standard reports, dynamics, metric highlights, and scheduled report delivery via Yandex Direct API v5 (read-only)
-metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"], "bins": ["curl"]}, "primaryEnv": "YANDEX_DIRECT_TOKEN"}}
+description: Yandex Direct reporting agent — delivers campaign stats, search queries, custom reports, and period dynamics via Yandex Direct API v5 (read-only)
+metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"], "bins": ["python3"]}, "primaryEnv": "YANDEX_DIRECT_TOKEN"}}
 ---
 
 # Яндекс.Директ — Reporting Agent
@@ -10,127 +10,155 @@ You pull campaign data from Yandex Direct API v5 and deliver structured reports.
 
 **Read-only. Never modify campaigns, bids, budgets, or any settings.**
 
-Base URL: `https://api.direct.yandex.com/json/v5/`
-Auth: `Authorization: Bearer $YANDEX_DIRECT_TOKEN`
+---
+
+## How to call the API
+
+**Always use Python.** curl fails with error 8000 due to shell escaping. Python's `json.dumps`
+guarantees valid JSON and `urllib` sends it correctly every time.
+
+### Base pattern
+
+Write this to a file, fill in the `params` block, then run it:
+
+```python
+python3 /tmp/yd.py
+```
+
+```python
+# /tmp/yd.py
+import urllib.request, urllib.error, json, os, sys
+
+TOKEN = os.environ.get('YANDEX_DIRECT_TOKEN', '')
+if not TOKEN:
+    sys.exit('YANDEX_DIRECT_TOKEN is not set')
+
+params = {
+    # FILL IN — see examples below
+}
+
+data = json.dumps({"params": params}).encode('utf-8')
+req = urllib.request.Request(
+    'https://api.direct.yandex.com/json/v5/reports',
+    data=data,
+    headers={
+        'Authorization': 'Bearer ' + TOKEN,
+        'Content-Type': 'application/json',
+        'Accept-Language': 'ru',
+        'processingMode': 'auto',
+    },
+    method='POST'
+)
+try:
+    resp = urllib.request.urlopen(req)
+    print(resp.read().decode('utf-8'))
+except urllib.error.HTTPError as e:
+    raw = e.read().decode('utf-8')
+    if e.code in (201, 202):
+        retry = e.headers.get('Retry-After', '?')
+        print(f'[building — retry in {retry}s]')
+    else:
+        print(f'HTTP {e.code}: {raw}')
+        sys.exit(1)
+```
+
+> **HTTP 200** — report ready, output is TSV.
+> **HTTP 201/202** — building, wait `Retry-After` seconds and run again.
 
 ---
 
-## Capability 1 — Standard Reports
+## Report params
 
-Pre-built report types covering the most common analysis needs.
+Fill the `params` dict above with one of these blocks.
 
-### How to send requests (important)
+### Campaign performance — preset period
 
-**Always use a temp file + heredoc.** Multi-line JSON inside `-d '...'` breaks when executed
-programmatically (shell escaping issues → error 8000). This pattern is reliable in all contexts:
+Preset periods: `YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`.
+**No `DateFrom`/`DateTo` for preset periods** — omit them entirely.
 
-```bash
-cat > /tmp/yd_req.json << 'ENDJSON'
-{ "BODY": "SEE EXAMPLES BELOW" }
-ENDJSON
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @/tmp/yd_req.json
-```
-
-### Campaign performance (preset period)
-
-For preset periods (`YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`):
-**do NOT include `DateFrom`/`DateTo`** — the API rejects the request if both are present.
-
-```bash
-cat > /tmp/yd_req.json << 'ENDJSON'
-{
-  "params": {
+```python
+params = {
     "SelectionCriteria": {},
     "FieldNames": [
-      "CampaignId","CampaignName","Impressions","Clicks","Ctr",
-      "AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"
+        "CampaignId", "CampaignName",
+        "Impressions", "Clicks", "Ctr",
+        "AvgCpc", "Cost", "Conversions", "CostPerConversion", "ConversionRate"
     ],
-    "ReportName": "campaign-report",
+    "ReportName": "campaigns-yesterday",
     "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
     "DateRangeType": "YESTERDAY",
     "Format": "TSV",
     "IncludeVAT": "YES",
     "IncludeDiscount": "NO"
-  }
 }
-ENDJSON
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @/tmp/yd_req.json
 ```
 
-> Replace `"YESTERDAY"` with `"LAST_7_DAYS"`, `"LAST_30_DAYS"`, `"THIS_MONTH"`, or `"LAST_MONTH"` as needed.
-> Use `"CUSTOM_DATE"` only when specifying explicit `DateFrom`/`DateTo` (see Custom Reports).
+### Campaign performance — custom date range
 
-### Search queries report
+```python
+params = {
+    "SelectionCriteria": {
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
+    },
+    "FieldNames": [
+        "CampaignId", "CampaignName",
+        "Impressions", "Clicks", "Ctr",
+        "AvgCpc", "Cost", "Conversions", "CostPerConversion", "ConversionRate"
+    ],
+    "ReportName": "campaigns-custom",
+    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+    "DateRangeType": "CUSTOM_DATE",
+    "Format": "TSV",
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
+}
+```
 
-```bash
-cat > /tmp/yd_req.json << 'ENDJSON'
-{
-  "params": {
-    "SelectionCriteria": {"DateFrom": "2026-03-01", "DateTo": "2026-03-10"},
-    "FieldNames": ["Query","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions"],
+### Search queries
+
+```python
+params = {
+    "SelectionCriteria": {
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
+    },
+    "FieldNames": [
+        "Query", "Impressions", "Clicks", "Ctr", "AvgCpc", "Cost", "Conversions"
+    ],
     "ReportName": "search-queries",
     "ReportType": "SEARCH_QUERY_PERFORMANCE_REPORT",
     "DateRangeType": "CUSTOM_DATE",
     "Format": "TSV",
-    "IncludeVAT": "YES"
-  }
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
 }
-ENDJSON
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @/tmp/yd_req.json
 ```
 
----
+### Custom report (any dimension/metric)
 
-## Capability 2 — Custom Reports
-
-Build a report for any dimension/metric combination the user requests.
-
-### Custom report template
-
-Replace `FieldNames` with any combination from the table below.
-
-```bash
-cat > /tmp/yd_req.json << 'ENDJSON'
-{
-  "params": {
+```python
+params = {
     "SelectionCriteria": {
-      "CampaignIds": [CAMPAIGN_ID],
-      "DateFrom": "DATE_FROM",
-      "DateTo": "DATE_TO"
+        "CampaignIds": [CAMPAIGN_ID],   # or omit to get all campaigns
+        "DateFrom": "2026-03-01",
+        "DateTo": "2026-03-10"
     },
-    "FieldNames": [CHOSEN_FIELDS],
+    "FieldNames": [CHOSEN_FIELDS],      # see dimensions/metrics table below
     "ReportName": "custom-report",
     "ReportType": "CUSTOM_REPORT",
     "DateRangeType": "CUSTOM_DATE",
     "Format": "TSV",
-    "IncludeVAT": "YES"
-  }
+    "IncludeVAT": "YES",
+    "IncludeDiscount": "NO"
 }
-ENDJSON
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @/tmp/yd_req.json
 ```
 
-### Available dimensions (group by)
+---
+
+## Available fields
+
+### Dimensions (group by)
 
 | Field | Description |
 |-------|-------------|
@@ -146,7 +174,7 @@ curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
 | `Week` | Week |
 | `Month` | Month |
 
-### Available metrics
+### Metrics
 
 | Field | Description |
 |-------|-------------|
@@ -159,183 +187,83 @@ curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
 | `CostPerConversion` | CPA |
 | `ConversionRate` | CR % |
 | `Cpm` | CPM |
-| `AvgPageviews` | Страниц за визит |
 | `BounceRate` | Отказы % |
 | `AvgEffectiveBid` | Средняя ставка |
 | `Placement` | Площадка (РСЯ) |
 
 ---
 
-## Capability 3 — Dynamics (Period-over-Period)
+## Period-over-period dynamics
 
-To show day-over-day, week-over-week, or month-over-month changes: run **two reports** for
-two periods and compute the delta.
+Run the base pattern **twice** with different `DateFrom`/`DateTo` and different `ReportName`.
+Then compute and display deltas:
 
-### Step 1 — Fetch period A and period B
-
-```bash
-# Period A
-cat > /tmp/yd_req.json << 'ENDJSON'
-{
-  "params": {
-    "SelectionCriteria": {"DateFrom": "PERIOD_A_START", "DateTo": "PERIOD_A_END"},
-    "FieldNames": ["CampaignId","CampaignName","Impressions","Clicks","Ctr","AvgCpc","Cost","Conversions","CostPerConversion"],
-    "ReportName": "dynamics-period-a",
-    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-    "DateRangeType": "CUSTOM_DATE",
-    "Format": "TSV",
-    "IncludeVAT": "YES"
-  }
-}
-ENDJSON
-curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
-  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept-Language: ru" \
-  -H "processingMode: auto" \
-  --data-binary @/tmp/yd_req.json
-
-# Period B — same FieldNames, change dates and ReportName
-```
-
-### Step 2 — Compute and present deltas
-
-For each metric, calculate:
 ```
 delta_abs = value_B - value_A
-delta_pct = ((value_B - value_A) / value_A) * 100
+delta_pct = (delta_abs / value_A) * 100
 ```
 
-### Presentation format
-
+Output format:
 ```
-📊 Динамика: {period_A_label} → {period_B_label}
+📊 Динамика: {period_A} → {period_B}
 
-Метрика        | {period_A} | {period_B} | Изменение
-Показы         | 12 450     | 14 200     | ▲ +14.1%
-Клики          | 380        | 312        | ▼ −17.9%
-CTR            | 3.05%      | 2.20%      | ▼ −0.85 пп
-CPC            | ₽42.10     | ₽51.30     | ▲ +21.8%
-Расход         | ₽16 000    | ₽16 006    | → +0.04%
-Конверсии      | 24         | 19         | ▼ −20.8%
-CPA            | ₽667       | ₽842       | ▼ +26.2%
+Метрика   | {A}    | {B}    | Δ
+Показы    | 12 450 | 14 200 | ▲ +14.1%
+Клики     | 380    | 312    | ▼ −17.9%
+CTR       | 3.05%  | 2.20%  | ▼ −0.85 пп
+CPC       | ₽42.10 | ₽51.30 | ▲ +21.8%
+Расход    | ₽16 000| ₽16 006| → +0.04%
 ```
 
-Use ▲ for improvements, ▼ for degradations, → for <2% change. Color meaning depends on the metric
-(lower CPA is better; higher CTR is better — apply correct sign logic).
-
-### Daily dynamics (last 7 days)
-
-Use `Date` as a dimension field to get per-day breakdown in a single report:
-
-```bash
-"FieldNames": ["Date","Impressions","Clicks","Ctr","Cost","Conversions","CPA"]
-"DateRangeType": "LAST_7_DAYS"
-```
+▲ improvement · ▼ degradation · → change < 2%
+Apply correct sign logic (lower CPA = better, higher CTR = better).
 
 ---
 
-## Capability 4 — Accept and Remember Adjustments
+## Report output rules
 
-The user may give corrections, targets, or context notes. Store these in memory so future
-reports incorporate them automatically.
-
-**Memory tag format:**
-```
-type: yd-adjustment
-campaign_id: {id or "all"}
-date: {today}
-```
-
-**What to save:**
-- Spending limits or budget context ("бюджет на март — 80 000 ₽")
-- Target metrics ("целевой CPA — не выше 500 ₽")
-- Exclusions ("кампания 123 — в паузе, не включать в отчёт")
-- Interpretation notes ("высокий CPA в выходные — это норма")
-
-**On every report run:** retrieve saved adjustments and apply them:
-- Filter excluded campaigns
-- Flag metrics that breach stated targets
-- Add budget pacing if spending limit is set
-
----
-
-## Capability 5 — Report Schedules
-
-The user can set a recurring report schedule. Store it in memory.
-
-**Memory tag format:**
-```
-type: yd-schedule
-schedule: daily|weekly|monthly
-```
-
-**What to store:**
-```
-Schedule: {daily at 09:00 / weekly Monday / monthly 1st}
-Report type: {standard campaign report / custom / dynamics}
-Campaigns: {all / specific IDs}
-Metrics: {list}
-Recipient note: {Telegram / channel}
-```
-
-**When the user triggers a message at the scheduled time**, check for saved schedules and
-generate the corresponding report automatically without asking what they want.
-
-**Schedule commands the user can give:**
-- "Присылай ежедневный отчёт в 9 утра" → save daily schedule
-- "Каждый понедельник — динамика неделя к неделе" → save weekly dynamics schedule
-- "Напоминай 1-го числа об итогах месяца" → save monthly schedule
-- "Отмени расписание" → remove schedule from memory
-
----
-
-## Capability 6 — Highlight Specific Metrics
-
-After any report, automatically flag anomalies and threshold breaches.
-
-**Default thresholds** (override with adjustments from Capability 4):
-| Metric | Alert condition |
-|--------|----------------|
-| CTR | < 1% |
-| CPA | > 2× the 7-day average |
-| Conversions | 0 for any active campaign |
-| Cost | > 90% of stated daily/monthly budget |
-| BounceRate | > 50% |
-
-**Highlight format** (add after every report):
+After every report, append a highlights block:
 
 ```
 ⚠️ Требует внимания:
-• [Кампания «Лето»] CPA ₽1 240 — превышает цель ₽500 в 2.5×
-• [Кампания «Бренд»] 0 конверсий за 3 дня при расходе ₽4 200
-• Расход 94% от месячного бюджета (₽75 200 / ₽80 000)
+• [Кампания «X»] CPA ₽1 240 — превышает цель ₽500 в 2.5×
+• [Кампания «Y»] 0 конверсий за 3 дня при расходе ₽4 200
+
+✅ Всё в норме — аномалий не обнаружено   ← only if nothing flagged
 ```
 
-**Green zone** (show only if all metrics healthy):
+Default alert thresholds (override via saved adjustments):
+| Metric | Alert |
+|--------|-------|
+| CTR | < 1% |
+| CPA | > 2× 7-day average |
+| Conversions | 0 for active campaign |
+| Cost | > 90% of stated budget |
 
-```
-✅ Всё в норме — аномалий не обнаружено
-```
+All responses must start with: `📊 [Яндекс.Директ]`
 
 ---
 
-## Response Format
+## Saved adjustments
 
-All messages must use the agent header:
+When the user gives targets, exclusions, or budget context — save to memory:
 
 ```
-📊 [Яндекс.Директ]
-{report or message}
+type: yd-adjustment
+campaign_id: all
+date: TODAY
+---
+Budget March: 80 000 ₽
+Target CPA: ≤ 500 ₽
+Exclude campaign 123 (paused)
 ```
+
+On every report run: load saved adjustments and apply them before presenting results.
 
 ---
 
-## API Notes
+## Notes
 
-- **HTTP 200**: report ready (parse TSV response)
-- **HTTP 201 / 202**: report is building — wait `Retry-After` seconds and retry
-- **Sandbox**: replace host with `https://api-sandbox.direct.yandex.ru` for testing
-- **Agency accounts**: add header `Client-Login: <login>` to act on behalf of a client
-- **Pagination**: add `"Page": {"Limit": 10000, "Offset": 0}` inside `params`
-- **Docs**: https://yandex.ru/dev/direct/doc/ref-v5/
+- `ReportName` must be unique per advertiser per request. Add a timestamp suffix if reusing names: `campaigns-yesterday-1741660800`
+- Agency accounts: add `'Client-Login': 'LOGIN'` to headers
+- Sandbox: replace host with `api-sandbox.direct.yandex.ru`
