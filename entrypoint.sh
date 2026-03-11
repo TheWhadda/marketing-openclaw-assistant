@@ -45,9 +45,12 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
-# Disable auth entirely — headless Railway bot, no browser/device pairing possible or needed.
-# trustedProxies covers Railway's internal 10.x.x.x network used by exec tool and service mesh.
-openclaw config set gateway.auth.mode none
+# Trust Railway's internal network so exec tool result delivery (Session Send) bypasses pairing.
+# 10.0.0.0/8 covers Railway's internal IPs; loopback covers same-process connections.
+if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
+  echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
+  exit 1
+fi
 openclaw config set gateway.trustedProxies '["10.0.0.0/8","127.0.0.1/32","::1/128"]'
 openclaw config set gateway.controlUi.allowInsecureAuth true
 openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
@@ -82,4 +85,4 @@ openclaw config set tools.exec.security full
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
-exec openclaw gateway run --port "$PORT" --bind lan --auth none --allow-unconfigured
+exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured
