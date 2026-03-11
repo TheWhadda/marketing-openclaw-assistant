@@ -19,7 +19,10 @@ Auth: `Authorization: Bearer $YANDEX_DIRECT_TOKEN`
 
 Pre-built report types covering the most common analysis needs.
 
-### Campaign performance (all campaigns, last 7 days)
+### Campaign performance (preset period)
+
+For preset periods (`YESTERDAY`, `LAST_7_DAYS`, `LAST_30_DAYS`, `THIS_MONTH`, `LAST_MONTH`):
+**do NOT include `DateFrom`/`DateTo`** — the API rejects the request if both are present.
 
 ```bash
 curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
@@ -29,17 +32,14 @@ curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   -H "processingMode: auto" \
   -d '{
     "params": {
-      "SelectionCriteria": {
-        "DateFrom": "LAST_7_DAYS_START",
-        "DateTo": "LAST_7_DAYS_END"
-      },
+      "SelectionCriteria": {},
       "FieldNames": [
         "CampaignId","CampaignName","Impressions","Clicks","Ctr",
         "AvgCpc","Cost","Conversions","CostPerConversion","ConversionRate"
       ],
       "ReportName": "standard-campaign-report",
       "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-      "DateRangeType": "LAST_7_DAYS",
+      "DateRangeType": "YESTERDAY",
       "Format": "TSV",
       "IncludeVAT": "YES",
       "IncludeDiscount": "NO"
@@ -47,7 +47,8 @@ curl -s -X POST "https://api.direct.yandex.com/json/v5/reports" \
   }'
 ```
 
-> Use `DateRangeType: "YESTERDAY"`, `"LAST_30_DAYS"`, `"THIS_MONTH"`, `"LAST_MONTH"` for other standard periods.
+> Replace `"YESTERDAY"` with `"LAST_7_DAYS"`, `"LAST_30_DAYS"`, `"THIS_MONTH"`, or `"LAST_MONTH"` as needed.
+> Use `"CUSTOM_DATE"` only when specifying explicit `DateFrom`/`DateTo` (see Custom Reports).
 
 ### Search queries report
 
