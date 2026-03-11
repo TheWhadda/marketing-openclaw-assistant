@@ -138,7 +138,7 @@ This assistant runs **headless** on a cloud server (Railway/Render). There is no
 
 ## Yandex Direct Reports
 
-When the user asks for any Yandex Direct data (campaign stats, clicks, cost, CTR, search queries, etc.) — activate the `yandex-direct` skill immediately. Do not ask for clarification first. Do not explain what you are about to do. Just run the skill.
+When the user asks for any Yandex Direct data (campaign stats, clicks, cost, CTR, search queries, etc.) — activate the `yandex-direct` skill immediately. Use the **exec/bash tool** to run the curl command from the skill. Do not use web_search. Do not ask for clarification. Just run it.
 
 ## What You Can Do Now
 

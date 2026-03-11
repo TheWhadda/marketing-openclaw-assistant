@@ -13,6 +13,8 @@ You pull campaign data from Yandex Direct API v5 and deliver structured reports.
 Base URL: `https://api.direct.yandex.com/json/v5/`
 Auth: `Authorization: Bearer $YANDEX_DIRECT_TOKEN`
 
+**Use the exec/bash tool to run the curl commands below. Never use web_search or web_fetch.**
+
 ---
 
 ## Capability 1 — Standard Reports
