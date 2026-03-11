@@ -33,6 +33,7 @@ COPY workspace/ ./workspace-seed/
 
 # Copy and make startup script executable
 COPY entrypoint.sh ./entrypoint.sh
+COPY yd-proxy.js ./yd-proxy.js
 RUN chmod +x ./entrypoint.sh
 
 # Port exposed by the OpenClaw gateway
