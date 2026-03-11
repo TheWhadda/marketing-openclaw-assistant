@@ -37,6 +37,7 @@
   gateway: {
     mode: "local",
     bind: "lan",
+    pairing: false,
   },
 
   // Telegram channel
