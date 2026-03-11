@@ -29,6 +29,7 @@ COPY workspace/ ./workspace-seed/
 
 # Copy and make startup script executable
 COPY entrypoint.sh ./entrypoint.sh
+COPY proxy.js ./proxy.js
 COPY yd-proxy.js ./yd-proxy.js
 RUN chmod +x ./entrypoint.sh
 

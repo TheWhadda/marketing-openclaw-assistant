@@ -4,6 +4,7 @@ set -e
 STATE_DIR="${OPENCLAW_STATE_DIR:-/data/.openclaw}"
 WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-/data/workspace}"
 PORT="${PORT:-8080}"
+GATEWAY_INTERNAL_PORT="${GATEWAY_INTERNAL_PORT:-8081}"
 
 echo "[entrypoint] Starting marketing-openclaw-assistant"
 echo "[entrypoint] State dir:     $STATE_DIR"
@@ -36,7 +37,7 @@ if [ -d "/app/workspace-seed/scripts" ]; then
   echo "[entrypoint] Scripts synced."
 fi
 
-# OPENCLAW_GATEWAY_TOKEN is required when binding to lan (all interfaces).
+# OPENCLAW_GATEWAY_TOKEN is required for gateway auth.
 if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
   echo "[entrypoint] ERROR: OPENCLAW_GATEWAY_TOKEN is not set."
   exit 1
@@ -44,11 +45,10 @@ fi
 
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
-openclaw config set gateway.bind lan
-# Disable device pairing — gateway connects to itself via LAN IP (not localhost)
-# which triggers pairing check for ALL internal tools (sessions_list, exec, etc.).
-openclaw config set gateway.controlUi.allowInsecureAuth true
-openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true
+# Bind to loopback so internal tool calls (sessions_list, exec, etc.) connect via
+# 127.0.0.1 — no pairing required. External traffic reaches the gateway through
+# the proxy process started below.
+openclaw config set gateway.bind loopback
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
 openclaw config set channels.telegram.enabled true
@@ -70,5 +70,8 @@ openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
 echo "[entrypoint] Config applied."
 
-echo "[entrypoint] Launching OpenClaw gateway on 0.0.0.0:$PORT"
-exec openclaw gateway run --port "$PORT" --bind lan --auth token --allow-unconfigured
+echo "[entrypoint] Starting proxy on 0.0.0.0:$PORT → 127.0.0.1:$GATEWAY_INTERNAL_PORT"
+GATEWAY_INTERNAL_PORT="$GATEWAY_INTERNAL_PORT" PORT="$PORT" node /app/proxy.js &
+
+echo "[entrypoint] Launching OpenClaw gateway on 127.0.0.1:$GATEWAY_INTERNAL_PORT"
+exec openclaw gateway run --port "$GATEWAY_INTERNAL_PORT" --bind loopback --auth token --allow-unconfigured
