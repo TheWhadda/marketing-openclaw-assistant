@@ -47,7 +47,6 @@ fi
 echo "[entrypoint] Applying openclaw config..."
 openclaw config set gateway.mode local
 openclaw config set gateway.bind lan
-openclaw config set gateway.pairing false
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
 openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
 openclaw config set channels.telegram.enabled true
