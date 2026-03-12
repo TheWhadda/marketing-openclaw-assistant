@@ -3,6 +3,7 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+startCommand = "/app/entrypoint.sh"
 # OpenClaw gateway doesn't expose an HTTP /health endpoint.
 # Railway will use a TCP healthcheck on the exposed port instead.
 # healthcheckTimeout still controls how long Railway waits for the port to open.
