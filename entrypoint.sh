@@ -68,16 +68,6 @@ openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
-# session.scope can't be set via CLI — patch JSON directly
-node -e "
-  const fs = require('fs');
-  const p = '$STATE_DIR/openclaw.json';
-  const c = JSON.parse(fs.readFileSync(p, 'utf8'));
-  c.session = c.session || {};
-  c.session.scope = 'session';
-  fs.writeFileSync(p, JSON.stringify(c, null, 2));
-  console.log('[entrypoint] session.scope patched to: session');
-"
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Starting yd-proxy (background data fetcher)..."
