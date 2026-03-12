@@ -44,6 +44,18 @@ if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
 fi
 
 echo "[entrypoint] Applying openclaw config..."
+# Remove session.scope if present — written by a bad deploy, causes gateway crash
+node -e "
+  const fs = require('fs');
+  const p = '$STATE_DIR/openclaw.json';
+  if (!fs.existsSync(p)) process.exit(0);
+  const c = JSON.parse(fs.readFileSync(p, 'utf8'));
+  if (c.session && 'scope' in c.session) {
+    delete c.session.scope;
+    fs.writeFileSync(p, JSON.stringify(c, null, 2));
+    console.log('[entrypoint] Removed unsupported session.scope from config.');
+  }
+"
 openclaw config set gateway.mode local
 # Bind to loopback so internal tool calls (sessions_list, exec, etc.) connect via
 # 127.0.0.1 — no pairing required. External traffic reaches the gateway through
@@ -68,17 +80,6 @@ openclaw config set session.reset.idleMinutes 240
 openclaw config set messages.tts.auto off
 openclaw config set tools.media.audio.enabled true
 openclaw config set tools.media.audio.models '[{"provider":"openai","model":"gpt-4o-mini-transcribe"}]'
-# Remove session.scope if present (unsupported value causes gateway crash)
-node -e "
-  const fs = require('fs');
-  const p = '$STATE_DIR/openclaw.json';
-  const c = JSON.parse(fs.readFileSync(p, 'utf8'));
-  if (c.session && 'scope' in c.session) {
-    delete c.session.scope;
-    fs.writeFileSync(p, JSON.stringify(c, null, 2));
-    console.log('[entrypoint] Removed unsupported session.scope from config.');
-  }
-"
 echo "[entrypoint] Config applied."
 
 echo "[entrypoint] Starting yd-proxy (background data fetcher)..."
