@@ -50,7 +50,7 @@ openclaw config set gateway.mode local
 # the proxy process started below.
 openclaw config set gateway.bind loopback
 openclaw config set agents.defaults.workspace "$WORKSPACE_DIR"
-openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}"
+openclaw config set agents.defaults.model.primary "${OPENCLAW_MODEL:-anthropic/claude-haiku-4-5-20251001}"
 openclaw config set channels.telegram.enabled true
 openclaw config set channels.telegram.streamMode partial
 if [ -n "$TELEGRAM_ALLOWLIST" ]; then
