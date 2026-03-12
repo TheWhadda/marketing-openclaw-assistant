@@ -82,8 +82,10 @@
   },
 
 
-  // Session: keep conversation context within a day, reset at 4am
+  // Session: isolated context per chat, reset daily at 4am
   session: {
+    // "session" gives each Telegram chat its own container + workspace.
+    scope: "session", // session | agent | shared
     reset: {
       mode: "daily",
       atHour: 4,
