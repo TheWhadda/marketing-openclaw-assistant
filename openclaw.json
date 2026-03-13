@@ -83,7 +83,9 @@
 
 
   // Session: keep conversation context within a day, reset at 4am
+  // dmScope: isolate context per sender so each Telegram user gets their own session
   session: {
+    dmScope: "per-channel-peer",
     reset: {
       mode: "daily",
       atHour: 4,
