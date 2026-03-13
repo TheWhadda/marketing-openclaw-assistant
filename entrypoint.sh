@@ -74,6 +74,7 @@ else
   openclaw config set channels.telegram.dmPolicy open
   openclaw config set channels.telegram.allowFrom '["*"]'
 fi
+openclaw config set session.dmScope per-channel-peer
 openclaw config set session.reset.mode daily
 openclaw config set session.reset.atHour 4
 openclaw config set session.reset.idleMinutes 240
