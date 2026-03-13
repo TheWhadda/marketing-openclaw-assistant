@@ -27,60 +27,7 @@ const QUERY_FIELDS = [
   'Query', 'Impressions', 'Clicks', 'Ctr', 'AvgCpc', 'Cost', 'Conversions',
 ];
 
-const REPORTS = [
-  {
-    file: 'yesterday.tsv',
-    params: {
-      SelectionCriteria: {},
-      FieldNames: CAMPAIGN_FIELDS,
-      ReportName: `campaigns-yesterday-${Date.now()}`,
-      ReportType: 'CAMPAIGN_PERFORMANCE_REPORT',
-      DateRangeType: 'YESTERDAY',
-      Format: 'TSV',
-      IncludeVAT: 'YES',
-      IncludeDiscount: 'NO',
-    },
-  },
-  {
-    file: 'last7days.tsv',
-    params: {
-      SelectionCriteria: {},
-      FieldNames: CAMPAIGN_FIELDS,
-      ReportName: `campaigns-last7days-${Date.now()}`,
-      ReportType: 'CAMPAIGN_PERFORMANCE_REPORT',
-      DateRangeType: 'LAST_7_DAYS',
-      Format: 'TSV',
-      IncludeVAT: 'YES',
-      IncludeDiscount: 'NO',
-    },
-  },
-  {
-    file: 'last30days.tsv',
-    params: {
-      SelectionCriteria: {},
-      FieldNames: CAMPAIGN_FIELDS,
-      ReportName: `campaigns-last30days-${Date.now()}`,
-      ReportType: 'CAMPAIGN_PERFORMANCE_REPORT',
-      DateRangeType: 'LAST_30_DAYS',
-      Format: 'TSV',
-      IncludeVAT: 'YES',
-      IncludeDiscount: 'NO',
-    },
-  },
-  {
-    file: 'thismonth.tsv',
-    params: {
-      SelectionCriteria: {},
-      FieldNames: CAMPAIGN_FIELDS,
-      ReportName: `campaigns-thismonth-${Date.now()}`,
-      ReportType: 'CAMPAIGN_PERFORMANCE_REPORT',
-      DateRangeType: 'THIS_MONTH',
-      Format: 'TSV',
-      IncludeVAT: 'YES',
-      IncludeDiscount: 'NO',
-    },
-  },
-];
+const REPORTS = [];
 
 function fetchReport(params) {
   return new Promise((resolve, reject) => {

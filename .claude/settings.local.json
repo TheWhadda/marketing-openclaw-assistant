@@ -7,7 +7,19 @@
       "WebFetch(domain:registry.npmjs.org)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(gh api:*)",
+      "Bash(grep -v '^main$')",
+      "Bash(python3 -c \":*)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\" -X POST \"https://api.direct.yandex.com/json/v5/reports\" -H \"Authorization: Bearer y0__xDOyIZCGPbPPSDV25WtFr7ei6B_wbWGoNkXEBEsm8v5uiIG\" -H \"Content-Type: application/json\" -H \"Accept-Language: ru\" -H \"processingMode: auto\" -d '{\"\"params\"\":{\"\"SelectionCriteria\"\":{},\"\"FieldNames\"\":[\"\"CampaignId\"\",\"\"CampaignName\"\",\"\"Impressions\"\",\"\"Clicks\"\",\"\"Ctr\"\",\"\"AvgCpc\"\",\"\"Cost\"\"],\"\"ReportName\"\":\"\"test-001\"\",\"\"ReportType\"\":\"\"CAMPAIGN_PERFORMANCE_REPORT\"\",\"\"DateRangeType\"\":\"\"YESTERDAY\"\",\"\"Format\"\":\"\"TSV\"\",\"\"IncludeVAT\"\":\"\"YES\"\",\"\"IncludeDiscount\"\":\"\"NO\"\"}}')",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\" -X POST \"https://api.direct.yandex.com/json/v5/reports\" -H \"Authorization: Bearer y0__xDOyIZCGPbPPSDV25WtFr7ei6B_wbWGoNkXEBEsm8v5uiIG\" -H \"Content-Type: application/json\" -H \"Accept-Language: ru\" -H \"processingMode: auto\" --data-binary @-)",
+      "WebSearch",
+      "WebFetch(domain:til.simonwillison.net)",
+      "WebFetch(domain:docs.openclaw.ai)",
+      "WebFetch(domain:getclawkit.com)",
+      "WebFetch(domain:yandex.ru)",
+      "WebFetch(domain:station.railway.com)",
+      "Bash(npm install:*)"
     ]
   }
 }
