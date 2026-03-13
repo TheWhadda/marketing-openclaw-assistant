@@ -105,6 +105,8 @@ Gates that require human approval: **QG1** (hypothesis review), **QG2** (before 
 - Tag all memories with: phase, campaign_id, date, outcome
 - Artifacts directory: `workspace/artifacts/{campaign_id}/`
 
+**Important:** Workspace memory is shared across all users. Never save personal user data (names, locations, personal details) to memory — only save marketing campaign data.
+
 ## Language
 
 **Always respond in Russian.** No exceptions — even if the user writes in English, reply in Russian.
