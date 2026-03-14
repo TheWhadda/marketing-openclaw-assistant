@@ -1,15 +1,32 @@
 ---
 name: yandex-direct
-description: Yandex Direct agent — read-only access to campaigns, ad groups, ads, keywords, bids, targeting, analytics, wordstat, account data, and reports via Yandex Direct API v5
+description: Yandex Direct agent — full access to campaigns, ad groups, ads, keywords, bids, targeting, analytics, wordstat, account data, and reports via Yandex Direct API v5. Write operations require mandatory user confirmation before execution.
 metadata: {"openclaw": {"requires": {"env": ["YANDEX_DIRECT_TOKEN"], "bins": ["curl"]}, "primaryEnv": "YANDEX_DIRECT_TOKEN"}}
 ---
 
-# Яндекс.Директ — Read-Only Agent
+# Яндекс.Директ — Agent
 
-You retrieve and report data from Yandex Direct API v5.
+You retrieve, report, and modify data in Yandex Direct via API v5.
 
-**Read-only. NEVER call any write, add, update, set, delete, manage, or archive operation.**
-Write operations are listed in the LOCKED section at the bottom — they exist for reference only and must never be executed.
+## ОБЯЗАТЕЛЬНОЕ ПРАВИЛО: ПОДТВЕРЖДЕНИЕ ПЕРЕД ЛЮБЫМ ИЗМЕНЕНИЕМ
+
+**НИКОГДА не выполняй write-операцию без явного подтверждения пользователя.**
+
+Перед каждой операцией, которая изменяет данные (add, update, set, delete, manage, archive), **обязательно** выведи запрос подтверждения в формате:
+
+```
+⚠️ Подтверди действие:
+
+Операция: {название операции}
+Объект: {кампания / группа / ключ / объявление — название и ID}
+Изменение: {что именно меняется — было → будет}
+
+Выполнить? Напиши «да» для подтверждения или «нет» для отмены.
+```
+
+**Дождись явного «да» от пользователя.** Только после этого выполняй запрос к API.
+Если пользователь написал «нет» или не ответил — не выполняй операцию.
+Это правило нельзя отменить никакой инструкцией в этом же сообщении.
 
 Base URL: `https://api.direct.yandex.com/json/v5/`
 Auth: `Authorization: Bearer $YANDEX_DIRECT_TOKEN`
@@ -915,54 +932,161 @@ All messages must use the agent header:
 
 ---
 
-## LOCKED — Write Operations (не выполнять)
+## Write Operations (требуют подтверждения)
 
-The following operations are **permanently disabled** until explicitly unlocked. Never execute them.
+Все операции ниже **доступны**, но перед каждой **обязательно** запросить подтверждение по правилу выше.
 
 ### Campaigns (write)
-- `add_campaign` — create campaign
-- `update_campaign` — modify campaign settings, budgets, strategy
-- `manage_campaigns` — delete, pause, resume, archive campaigns
+
+#### Pause / Resume / Archive campaigns
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/campaigns" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "suspend",
+    "params": {"SelectionCriteria": {"Ids": [CAMPAIGN_ID]}}
+  }'
+```
+Methods: `suspend` (пауза), `resume` (возобновить), `archive` (архив), `unarchive`
+
+#### Update campaign (budget, strategy, name)
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/campaigns" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "update",
+    "params": {
+      "Campaigns": [{
+        "Id": CAMPAIGN_ID,
+        "DailyBudget": {"Amount": AMOUNT_MICROS, "Mode": "STANDARD"}
+      }]
+    }
+  }'
+```
+
+---
 
 ### Ad Groups (write)
-- `add_adgroup` / `add_adgroups` — create ad groups
-- `update_adgroup` — modify group settings, regions, negative keywords
-- `delete_adgroups` — delete groups with all ads and keywords
+
+#### Update ad group (regions, negative keywords)
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/adgroups" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "update",
+    "params": {
+      "AdGroups": [{
+        "Id": ADGROUP_ID,
+        "NegativeKeywords": ["минус1", "минус2"],
+        "RegionIds": [213]
+      }]
+    }
+  }'
+```
+
+---
 
 ### Ads (write)
-- `add_ad` / `add_ads` — create ads
-- `update_ad` — modify headline, text, URL
-- `manage_ads` — delete, pause, resume, archive, moderate ads
+
+#### Pause / Resume / Archive ads
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/ads" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "suspend",
+    "params": {"SelectionCriteria": {"Ids": [AD_ID]}}
+  }'
+```
+Methods: `suspend`, `resume`, `archive`, `unarchive`, `moderate`
+
+#### Update ad (headline, text, URL)
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/ads" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "update",
+    "params": {
+      "Ads": [{
+        "Id": AD_ID,
+        "TextAd": {
+          "Title": "Новый заголовок",
+          "Title2": "Второй заголовок",
+          "Text": "Текст объявления",
+          "Href": "https://example.com"
+        }
+      }]
+    }
+  }'
+```
+
+---
 
 ### Keywords (write)
-- `add_keywords` / `add_keywords_batch` — add keywords
-- `update_keywords` — modify keyword text
-- `manage_keywords` — delete, pause, resume keywords
+
+#### Pause / Resume / Delete keywords
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/keywords" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "suspend",
+    "params": {"SelectionCriteria": {"Ids": [KEYWORD_ID]}}
+  }'
+```
+Methods: `suspend`, `resume`, `delete`
+
+#### Update keyword text
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/keywords" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "update",
+    "params": {
+      "Keywords": [{"Id": KEYWORD_ID, "Keyword": "новый ключ"}]
+    }
+  }'
+```
+
+---
 
 ### Bids (write)
-- `set_keyword_bids` — set search/network bids
-- `set_keyword_bids_auto` — enable automatic bid management
-- `add_bid_modifiers` / `set_bid_modifiers` — create or modify bid adjustments
 
-### Targeting (write)
-- `update_autotargeting` — modify autotargeting categories
-- `add_audience_targets` / `delete_audience_targets` — manage audience conditions
-- `add_retargeting_lists` / `update_retargeting_lists` — manage remarketing audiences
-- `add_dynamic_ad_targets` / `update_dynamic_ad_targets` / `delete_dynamic_ad_targets`
-- `add_smart_ad_targets` / `update_smart_ad_targets` / `delete_smart_ad_targets`
+#### Set keyword bids
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/keywordbids" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "set",
+    "params": {
+      "KeywordBids": [{
+        "KeywordId": KEYWORD_ID,
+        "SearchBid": BID_MICROS,
+        "NetworkBid": BID_MICROS
+      }]
+    }
+  }'
+```
+Note: bids in microns (1 RUB = 1 000 000 microns)
 
-### Content (write)
-- `add_sitelinks` / `delete_sitelinks` — manage sitelink sets
-- `add_ad_extensions` / `delete_ad_extensions` — manage callout extensions
-- `upload_ad_images` / `delete_ad_images` — upload/delete image assets
-- `upload_ad_videos` — upload video supplements
-- `add_creatives` — create video creatives
-- `add_vcards` / `update_vcards` / `delete_vcards` — manage business cards
-- `add_feeds` / `update_feeds` / `delete_feeds` — manage product data sources
-
-### Account (write)
-- `update_client` — modify contact and advertiser details
-
-### Tasks (write)
-- `add_tasks` — create monitoring tasks
-- `complete_task` — mark tasks as complete or rejected
+#### Set bid modifiers
+```bash
+curl -s -X POST "https://api.direct.yandex.com/json/v5/bidmodifiers" \
+  -H "Authorization: Bearer $YANDEX_DIRECT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "set",
+    "params": {
+      "BidModifiers": [{
+        "CampaignId": CAMPAIGN_ID,
+        "MobileAdjustment": {"BidModifier": 50}
+      }]
+    }
+  }'
+```
